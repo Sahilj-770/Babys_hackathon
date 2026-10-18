@@ -8,6 +8,7 @@ import { soundEngine } from './audio/soundEngine';
 import { BootScreen } from './components/BootScreen';
 import { OSNavbar } from './components/OSNavbar';
 import { HeroSection } from './components/HeroSection';
+import { CinematicScrollSequence } from './components/CinematicScrollSequence';
 import { StatusWidget } from './components/StatusWidget';
 import { LullabyLab } from './components/exhibits/LullabyLab';
 import { NightlightCollection } from './components/exhibits/NightlightCollection';
@@ -70,10 +71,13 @@ export function App() {
         isReducedMotion: '(prefers-reduced-motion: reduce)'
       },
       (context) => {
-        const { isNormalMotion } = context.conditions as { isNormalMotion: boolean; isReducedMotion: boolean };
+        const { isNormalMotion } = context.conditions as {
+          isNormalMotion: boolean;
+          isReducedMotion: boolean;
+        };
 
         if (isNormalMotion) {
-          // Reversible smooth scroll entrance for exhibits and story cards
+          // Reversible smooth scroll entrance for exhibits
           gsap.utils.toArray<HTMLElement>('.gsap-fade-in').forEach((el) => {
             gsap.fromTo(
               el,
@@ -81,7 +85,7 @@ export function App() {
               {
                 opacity: 1,
                 y: 0,
-                duration: 0.75,
+                duration: 0.8,
                 ease: 'power2.out',
                 scrollTrigger: {
                   trigger: el,
@@ -93,7 +97,6 @@ export function App() {
             );
           });
         } else {
-          // Accessible reduced motion: immediately show without motion
           gsap.set('.gsap-fade-in', { opacity: 1, y: 0 });
         }
       }
@@ -123,7 +126,7 @@ export function App() {
       {/* Skippable Boot Screen */}
       {!booted && <BootScreen onEnter={() => setBooted(true)} />}
 
-      {/* Retro OS Navbar / Taskbar */}
+      {/* Retro OS Floating Dream Navbar */}
       <OSNavbar
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -135,22 +138,22 @@ export function App() {
       />
 
       <main style={{ flex: 1 }}>
-        {/* Hero Section starring Pip */}
+        {/* ACT I: THE NURSERY — Editorial Hero starring large unboxed Pip */}
         <HeroSection onOpenSecret={() => setIsEasterEggOpen(true)} />
 
-        {/* Live Odometer & Nursery Diagnostic bar */}
-        <StatusWidget />
+        {/* ACT II & III: THE AWAKENING & THE DREAM REALM — Signature GSAP Scroll Sequence */}
+        <CinematicScrollSequence />
 
         {/* 3 Interactive Exhibits / Dream Labs */}
         <section
           id="exhibits"
           style={{
-            maxWidth: '1100px',
+            maxWidth: '1160px',
             margin: '0 auto',
-            padding: '4rem 1.5rem',
+            padding: '4.5rem 1.5rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '3rem'
+            gap: '3.5rem'
           }}
         >
           <div style={{ textAlign: 'center' }}>
@@ -158,24 +161,37 @@ export function App() {
               className="font-mono"
               style={{
                 fontSize: '0.78rem',
-                padding: '0.35rem 0.85rem',
+                padding: '0.35rem 0.95rem',
                 backgroundColor: 'var(--bg-retro-panel)',
                 borderRadius: '999px',
                 border: '1px solid var(--border-color)',
                 color: 'var(--text-muted)'
               }}
             >
-              PROJECT DIRECTORY // 3 WORKING LABS
+              PROJECT DIRECTORY // 3 OPERATIONAL WORKBENCHES
             </span>
             <h2
               className="font-serif"
-              style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', color: 'var(--text-heading)', marginTop: '0.75rem' }}
+              style={{
+                fontSize: 'clamp(2.2rem, 4.2vw, 3.2rem)',
+                color: 'var(--text-heading)',
+                marginTop: '0.75rem'
+              }}
             >
               Pip's Interactive Dream Labs
             </h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0.5rem auto 0', fontSize: '1rem' }}>
-              Every prototype in Midnight Nursery is fully operational. Play lullaby frequencies,
-              calibrate ambient dream lanterns, and track the rooftop delivery flightpath.
+            <p
+              style={{
+                color: 'var(--text-muted)',
+                maxWidth: '640px',
+                margin: '0.5rem auto 0',
+                fontSize: '1.05rem',
+                lineHeight: 1.55
+              }}
+            >
+              Every invention in Midnight Nursery is an operational playground. Strike real-time
+              synthesizer chimes, adjust radiant atmospheric lantern spectrums, and inspect the
+              rooftop delivery flightpath.
             </p>
           </div>
 
@@ -195,12 +211,15 @@ export function App() {
           </div>
         </section>
 
-        {/* Signature Atmospheric Transition into Midnight Dream World */}
+        {/* ACT IV: BEDTIME & CHRONICLES — Origin Story & Midnight Realm */}
         <section className="midnight-realm-wrapper" aria-label="Midnight Dream Realm Origin Story">
           <div className="midnight-celestial-stars" />
-          <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-            <OriginStory />
-          </div>
+          <OriginStory />
+        </section>
+
+        {/* Live Odometer & Nursery Diagnostic bar */}
+        <section style={{ padding: '3rem 1.5rem 1rem' }}>
+          <StatusWidget />
         </section>
       </main>
 

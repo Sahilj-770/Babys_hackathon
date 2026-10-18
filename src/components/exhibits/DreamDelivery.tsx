@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MapPin, CheckCircle2, Sliders } from 'lucide-react';
+import { Send, CheckCircle2, Sliders, Moon } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { soundEngine } from '../../audio/soundEngine';
 import type { DreamDeliveryStop } from '../../types';
 
 const STOPS: DreamDeliveryStop[] = [
-  { id: 1, label: 'Clover Cottage', recipient: 'Baby Leo', dreamType: 'Warm Milk & Kitten Paws', x: 70, y: 140 },
-  { id: 2, label: 'Clocktower Attic', recipient: 'Grandma Martha', dreamType: 'Old Garden Roses & Vinyl Records', x: 230, y: 70 },
-  { id: 3, label: 'Lighthouse Loft', recipient: 'Sailor Finn', dreamType: 'Gentle Harbor Waves & Starlight', x: 390, y: 130 },
-  { id: 4, label: 'Moonrise Nursery', recipient: 'Pip & Friends', dreamType: 'Sugar Clouds & Velvet Bedtime', x: 530, y: 80 }
+  { id: 1, label: 'Clover Cottage', recipient: 'Baby Leo', dreamType: 'Warm Milk & Kitten Paws', x: 80, y: 150 },
+  { id: 2, label: 'Clocktower Attic', recipient: 'Grandma Martha', dreamType: 'Old Garden Roses & Vinyl Records', x: 260, y: 80 },
+  { id: 3, label: 'Lighthouse Loft', recipient: 'Sailor Finn', dreamType: 'Gentle Harbor Waves & Starlight', x: 440, y: 140 },
+  { id: 4, label: 'Moonrise Nursery', recipient: 'Pip & Friends', dreamType: 'Sugar Clouds & Velvet Bedtime', x: 620, y: 90 }
 ];
 
 interface DreamDeliveryProps {
@@ -18,17 +18,16 @@ interface DreamDeliveryProps {
 
 export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }) => {
   const [currentStopIndex, setCurrentStopIndex] = useState(0);
-  const [sliderProgress, setSliderProgress] = useState(0); // 0 to 100
+  const [sliderProgress, setSliderProgress] = useState(15);
   const [isDelivering, setIsDelivering] = useState(false);
-  const [deliveredCount, setDeliveredCount] = useState(4);
-  const [pathLength, setPathLength] = useState(520);
-  const [pipCoords, setPipCoords] = useState({ x: 70, y: 140 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [pipCoords, setPipCoords] = useState({ x: 80, y: 150 });
+  const [pathLength, setPathLength] = useState(650);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
-  const isDraggingRef = useRef(false);
 
-  // Measure path length on mount & resize
+  // Measure path length on mount
   useEffect(() => {
     if (pathRef.current) {
       const len = pathRef.current.getTotalLength();
@@ -38,7 +37,7 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
     }
   }, []);
 
-  // Compute exact position along SVG path whenever sliderProgress changes
+  // Compute exact coordinates along SVG path when progress changes
   useEffect(() => {
     if (pathRef.current && pathLength > 0) {
       const distance = (sliderProgress / 100) * pathLength;
@@ -64,10 +63,10 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
         const st = ScrollTrigger.create({
           trigger: containerRef.current,
           start: 'top 80%',
-          end: 'bottom 30%',
+          end: 'bottom 35%',
           scrub: 1.2,
           onUpdate: (self) => {
-            if (isDraggingRef.current) return;
+            if (isDragging) return;
             const p = Math.round(self.progress * 100);
             setSliderProgress(p);
             const nearest = Math.min(
@@ -83,7 +82,7 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
     );
 
     return () => mm.revert();
-  }, []);
+  }, [isDragging]);
 
   const activeStop = STOPS[currentStopIndex];
 
@@ -98,289 +97,280 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
       setCurrentStopIndex(nextIndex);
       setSliderProgress((nextIndex / (STOPS.length - 1)) * 100);
       setIsDelivering(false);
-      setDeliveredCount((prev) => prev + 1);
-      soundEngine.playMusicBoxNote(880, 1.2);
+      soundEngine.playCelebrationChime();
       if (onDreamDelivered) onDreamDelivered();
-    }, 600);
+    }, 700);
   };
 
-  const handleSelectStop = (idx: number) => {
-    setCurrentStopIndex(idx);
-    setSliderProgress((idx / (STOPS.length - 1)) * 100);
-    soundEngine.playClick(500 + idx * 50);
-  };
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
-    setSliderProgress(val);
-    const nearestIndex = Math.round((val / 100) * (STOPS.length - 1));
-    if (nearestIndex !== currentStopIndex) {
-      setCurrentStopIndex(nearestIndex);
-      soundEngine.playClick(440 + nearestIndex * 40);
-    }
+  const handleSelectStop = (index: number) => {
+    setCurrentStopIndex(index);
+    setSliderProgress((index / (STOPS.length - 1)) * 100);
+    soundEngine.playClick(500 + index * 60);
   };
 
   return (
-    <div ref={containerRef} className="retro-window">
-      <div className="retro-window-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <MapPin size={14} color="var(--color-berry)" />
-          <span>EXHIBIT 03: ROOFTOP_DELIVERY_ROUTE.MAP</span>
-        </div>
-        <span style={{ color: 'var(--color-berry)' }}>ROOFTOP FLIGHTPATH [SCROLL-LINKED]</span>
-      </div>
+    <div
+      id="dream-delivery"
+      ref={containerRef}
+      className="dream-delivery-exhibit"
+      style={{
+        position: 'relative',
+        background: 'linear-gradient(180deg, #090b20 0%, #060818 100%)',
+        borderRadius: '24px',
+        border: '1.5px solid rgba(119, 125, 255, 0.3)',
+        boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7)',
+        padding: '2.5rem',
+        color: '#ffffff',
+        overflow: 'hidden'
+      }}
+    >
+      {/* Background Starfield */}
+      <div className="midnight-celestial-stars" style={{ opacity: 0.55 }} />
 
-      <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              width: '76px',
-              height: '76px',
-              borderRadius: '50%',
-              backgroundColor: '#fff8f1',
-              border: '2px solid var(--color-gold)',
-              boxShadow: '0 0 12px rgba(255, 216, 138, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-              flexShrink: 0
-            }}
-          >
-            <img
-              src="/assets/pip_avatar_cloud.png"
-              alt="Pip floating gently on a midnight bedtime cloud"
-              style={{ width: '90%', height: '90%', objectFit: 'contain' }}
-            />
-          </div>
-
-          <div style={{ flex: 1, minWidth: '200px' }}>
-            <h3 className="font-serif" style={{ fontSize: '1.35rem', color: 'var(--text-heading)' }}>
+      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        {/* Exhibit Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div
+              className="font-mono"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.3rem 0.85rem',
+                backgroundColor: 'rgba(255, 216, 138, 0.12)',
+                borderRadius: '999px',
+                border: '1px solid rgba(255, 216, 138, 0.3)',
+                color: '#ffd88a',
+                fontSize: '0.74rem',
+                letterSpacing: '0.05em',
+                marginBottom: '0.5rem'
+              }}
+            >
+              <Moon size={13} color="#ffd88a" />
+              <span>EXHIBIT 03 // ROOFTOP FLIGHTPATH</span>
+            </div>
+            <h3 className="font-serif" style={{ fontSize: 'clamp(1.8rem, 3.2vw, 2.4rem)', margin: 0, color: '#fff8f1' }}>
               Midnight Rooftop Flightpath
             </h3>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
-              An illustrated town delivery route. As you scroll, Pip glides along the curved flightpath,
-              dropping personalized sweet dreams down each quiet chimney. You can also drag the scrubber or dispatch manually.
+            <p style={{ fontSize: '0.94rem', color: '#c9ceff', margin: '0.4rem 0 0', maxWidth: '640px' }}>
+              Glide with Pip across sleeping chimneys. Drag the flight scrubber or dispatch sweet dreams to each home.
             </p>
           </div>
+
+          {/* Quick Dispatch Action Button */}
+          <button
+            onClick={handleDispatchNext}
+            disabled={isDelivering}
+            className="retro-btn"
+            style={{
+              backgroundColor: '#ffd88a',
+              color: '#34221a',
+              borderColor: '#ffd88a',
+              boxShadow: '3px 3px 0px #a34063',
+              padding: '0.75rem 1.4rem',
+              fontSize: '0.9rem',
+              fontWeight: 700
+            }}
+          >
+            <Send size={15} color="#a34063" />
+            <span>{isDelivering ? 'Dispatching...' : 'Send Sweet Dream'}</span>
+          </button>
         </div>
 
-        {/* Illustrated SVG Rooftop Route Map */}
+        {/* Illustrated Rooftop Panorama & SVG Flight Path Stage */}
         <div
           style={{
             position: 'relative',
-            borderRadius: '16px',
-            backgroundColor: '#0c102a',
-            border: '1.5px solid var(--border-color)',
-            padding: '0.75rem',
-            overflow: 'hidden',
-            minHeight: '200px'
+            width: '100%',
+            height: '280px',
+            borderRadius: '18px',
+            backgroundColor: '#04050d',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden'
           }}
         >
+          {/* Subtle moon in corner */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '35px',
+              width: '45px',
+              height: '45px',
+              borderRadius: '50%',
+              backgroundColor: '#ffd88a',
+              boxShadow: '0 0 25px rgba(255, 216, 138, 0.65)'
+            }}
+          />
+
           <svg
-            viewBox="0 0 600 200"
-            style={{ width: '100%', height: 'auto', display: 'block' }}
+            viewBox="0 0 700 240"
+            style={{ width: '100%', height: '100%' }}
+            preserveAspectRatio="none"
           >
             <defs>
-              <clipPath id="cloudAvatarClip">
-                <circle cx="20" cy="20" r="18" />
-              </clipPath>
+              <linearGradient id="delivery-line-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ffd88a" />
+                <stop offset="50%" stopColor="#ffb3ba" />
+                <stop offset="100%" stopColor="#c4b5fd" />
+              </linearGradient>
+              <filter id="pip-glow">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
             </defs>
 
-            {/* Soft night sky stars */}
-            <circle cx="45" cy="35" r="1.5" fill="#ffd88a" className="star-point" />
-            <circle cx="120" cy="20" r="1" fill="#ffffff" className="star-point" />
-            <circle cx="180" cy="45" r="1.5" fill="#ffd88a" className="star-point" />
-            <circle cx="310" cy="25" r="1.2" fill="#ffffff" className="star-point" />
-            <circle cx="450" cy="35" r="1.5" fill="#ffd88a" className="star-point" />
-            <circle cx="560" cy="20" r="1" fill="#ffffff" className="star-point" />
-
-            {/* Rooftop Silhouettes */}
+            {/* Background silhouettes of sleeping roofs */}
             <path
-              d="M 10 200 L 40 150 L 100 150 L 120 200 L 160 200 L 210 110 L 260 110 L 290 200 L 330 200 L 370 140 L 420 140 L 460 200 L 490 200 L 530 115 L 570 150 L 590 200 Z"
-              fill="#141a3d"
+              d="M0 240 L0 180 L70 140 L140 180 L200 150 L270 190 L380 120 L480 180 L560 140 L640 180 L700 150 L700 240 Z"
+              fill="#0b0e24"
             />
-            {/* Chimney details */}
-            <rect x="75" y="130" width="16" height="20" fill="#20295c" />
-            <rect x="225" y="90" width="18" height="20" fill="#20295c" />
-            <rect x="385" y="120" width="16" height="20" fill="#20295c" />
-            <rect x="525" y="95" width="18" height="20" fill="#20295c" />
+            {/* Foreground roofs */}
+            <path
+              d="M0 240 L0 200 L50 160 L100 200 L110 150 L125 150 L125 200 L170 170 L240 210 L300 160 L380 210 L410 160 L430 160 L430 210 L500 180 L580 220 L640 170 L700 200 L700 240 Z"
+              fill="#060714"
+            />
 
-            {/* Cozy Glowing Window Squares */}
-            <rect x="65" y="165" width="14" height="18" rx="2" fill="#ffd88a" opacity={currentStopIndex === 0 ? '1' : '0.55'} />
-            <rect x="230" y="130" width="16" height="22" rx="2" fill="#ffd88a" opacity={currentStopIndex === 1 ? '1' : '0.55'} />
-            <rect x="390" y="160" width="14" height="18" rx="2" fill="#ffd88a" opacity={currentStopIndex === 2 ? '1' : '0.55'} />
-            <rect x="525" y="135" width="16" height="20" rx="2" fill="#ffd88a" opacity={currentStopIndex === 3 ? '1' : '0.55'} />
+            {/* Glowing Windows */}
+            <rect x="65" y="185" width="10" height="14" rx="2" fill="#ffd88a" opacity="0.9" />
+            <rect x="180" y="195" width="12" height="15" rx="2" fill="#ffd88a" opacity="0.85" />
+            <rect x="330" y="185" width="10" height="14" rx="2" fill="#ffd88a" opacity="0.9" />
+            <rect x="520" y="195" width="12" height="16" rx="2" fill="#ffd88a" opacity="0.95" />
 
-            {/* Flightpath Curve (Base track) */}
+            {/* Luminous SVG Bezier Flightpath */}
             <path
               ref={pathRef}
-              id="rooftopFlightPath"
-              d="M 70 140 Q 150 50, 230 70 T 390 130 T 530 80"
+              id="delivery-path"
+              d="M 80 150 Q 170 60, 260 80 T 440 140 T 620 90"
               fill="none"
-              stroke="#262f68"
-              strokeWidth="2.5"
-              strokeDasharray="6,6"
-              opacity="0.8"
-            />
-
-            {/* Active glowing starlight trace along path */}
-            <path
-              d="M 70 140 Q 150 50, 230 70 T 390 130 T 530 80"
-              fill="none"
-              stroke="#ffd88a"
+              stroke="url(#delivery-line-grad)"
               strokeWidth="3.5"
-              strokeDasharray={pathLength}
-              strokeDashoffset={pathLength * (1 - sliderProgress / 100)}
-              style={{
-                filter: 'drop-shadow(0 0 5px rgba(255, 216, 138, 0.85))',
-                transition: isDelivering ? 'stroke-dashoffset 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
-              }}
+              strokeDasharray="6 6"
+              filter="url(#pip-glow)"
             />
 
-            {/* Delivery Station Checkpoints */}
+            {/* Stop Location Waypoints */}
             {STOPS.map((stop, idx) => {
-              const isPastOrCurrent = idx <= currentStopIndex;
-              const isCurrent = idx === currentStopIndex;
+              const isPassed = currentStopIndex >= idx;
               return (
-                <g key={stop.id} style={{ cursor: 'pointer' }} onClick={() => handleSelectStop(idx)}>
+                <g
+                  key={stop.id}
+                  onClick={() => handleSelectStop(idx)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <circle
                     cx={stop.x}
                     cy={stop.y}
-                    r={isCurrent ? 12 : 8}
-                    fill={isCurrent ? '#ffd88a' : isPastOrCurrent ? '#777dff' : '#1e2454'}
-                    stroke="#090b20"
-                    strokeWidth="2"
-                    style={{ transition: 'all 0.3s ease' }}
+                    r={currentStopIndex === idx ? 8 : 5}
+                    fill={isPassed ? '#ffd88a' : '#777dff'}
+                    filter="url(#pip-glow)"
                   />
-                  {isCurrent && (
-                    <circle
-                      cx={stop.x}
-                      cy={stop.y}
-                      r="18"
-                      fill="none"
-                      stroke="#ffd88a"
-                      strokeWidth="1.5"
-                      opacity="0.75"
-                    />
-                  )}
                   <text
                     x={stop.x}
-                    y={stop.y - 16}
-                    fill={isCurrent ? '#ffd88a' : '#eaeaff'}
-                    fontSize="10"
-                    fontFamily="monospace"
+                    y={stop.y + 22}
                     textAnchor="middle"
+                    fill="#c9ceff"
+                    fontSize="10"
+                    fontFamily="var(--font-mono)"
                   >
-                    #{stop.id}
+                    {stop.label.split(' ')[0]}
                   </text>
                 </g>
               );
             })}
-
-            {/* Pip's Cloud Avatar Medallion on route (Circular, glowing badge) */}
-            <g
-              transform={`translate(${pipCoords.x - 20}, ${pipCoords.y - 20})`}
-              style={{
-                transition: isDelivering ? 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'transform 0.08s ease-out'
-              }}
-            >
-              {/* Outer starlight halo */}
-              <circle cx="20" cy="20" r="24" fill="rgba(255, 216, 138, 0.35)" filter="blur(5px)" />
-              {/* Golden circular frame */}
-              <circle cx="20" cy="20" r="19" fill="#fff8f1" stroke="#ffd88a" strokeWidth="2" />
-              {/* Masked avatar image inside badge */}
-              <image
-                href="/assets/pip_avatar_cloud.png"
-                x="1"
-                y="1"
-                width="38"
-                height="38"
-                clipPath="url(#cloudAvatarClip)"
-              />
-            </g>
           </svg>
-        </div>
 
-        {/* Route Scrubber Slider (Zero mobile overflow) */}
-        <div className="rooftop-scrubber-bar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-            <Sliders size={14} color="var(--color-berry)" />
-            <span className="font-mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              ROUTE:
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={sliderProgress}
-            onChange={handleSliderChange}
-            onMouseDown={() => { isDraggingRef.current = true; }}
-            onMouseUp={() => { isDraggingRef.current = false; }}
-            onTouchStart={() => { isDraggingRef.current = true; }}
-            onTouchEnd={() => { isDraggingRef.current = false; }}
-            aria-label="Scrub Pip along rooftop route"
+          {/* Real-time Smooth Pip Cloud Marker */}
+          <div
             style={{
-              flex: 1,
-              minWidth: '80px',
-              accentColor: 'var(--color-berry)',
-              cursor: 'pointer'
+              position: 'absolute',
+              left: `${(pipCoords.x / 700) * 100}%`,
+              top: `${(pipCoords.y / 240) * 100}%`,
+              transform: 'translate(-50%, -75%)',
+              pointerEvents: 'none',
+              transition: isDragging ? 'none' : 'all 0.15s ease-out',
+              filter: 'drop-shadow(0 0 16px rgba(255, 216, 138, 0.9))',
+              zIndex: 10
             }}
-          />
-          <span className="font-mono" style={{ fontSize: '0.74rem', fontWeight: 700, minWidth: '32px', textAlign: 'right' }}>
-            {Math.round(sliderProgress)}%
-          </span>
+          >
+            <img
+              src="/assets/pip_avatar_cloud.png"
+              alt="Pip on the bedtime dream delivery cloud"
+              style={{ width: '64px', height: '64px', objectFit: 'contain' }}
+            />
+          </div>
         </div>
 
-        {/* Current Destination Status & Dispatch Button */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            padding: '0.85rem 1rem',
-            backgroundColor: 'var(--bg-retro-panel)',
-            borderRadius: '12px',
-            border: '1px solid var(--border-color)'
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-              <CheckCircle2 size={15} color="var(--color-berry)" />
-              <span className="font-mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                TARGET:
-              </span>
-              <strong style={{ fontSize: '0.9rem', color: 'var(--text-heading)' }}>
-                {activeStop.label} ({activeStop.recipient})
-              </strong>
-            </div>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginLeft: '1.25rem' }}>
-              Payload: <em>{activeStop.dreamType}</em>
-            </p>
+        {/* Flight Scrubber & Stop Telemetry */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'center' }}>
+          {/* Scrubber bar */}
+          <div className="rooftop-scrubber-bar">
+            <Sliders size={16} color="#ffd88a" />
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={sliderProgress}
+              aria-label="Rooftop flightpath progress scrubber"
+              onMouseDown={() => setIsDragging(true)}
+              onMouseUp={() => setIsDragging(false)}
+              onTouchStart={() => setIsDragging(true)}
+              onTouchEnd={() => setIsDragging(false)}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setSliderProgress(val);
+                const nearest = Math.min(
+                  STOPS.length - 1,
+                  Math.max(0, Math.round((val / 100) * (STOPS.length - 1)))
+                );
+                setCurrentStopIndex(nearest);
+              }}
+              style={{
+                width: '100%',
+                accentColor: '#ffd88a',
+                cursor: 'pointer'
+              }}
+            />
+            <span className="font-mono" style={{ fontSize: '0.78rem', color: '#ffd88a', minWidth: '42px' }}>
+              {sliderProgress}%
+            </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <span className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Delivered: {deliveredCount}
-            </span>
-            <button
-              onClick={handleDispatchNext}
-              disabled={isDelivering}
-              className="retro-btn"
+          {/* Active Stop Card */}
+          <div
+            style={{
+              padding: '0.85rem 1.25rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem'
+            }}
+          >
+            <div
               style={{
-                backgroundColor: 'var(--color-berry)',
-                color: '#ffffff',
-                borderColor: 'var(--color-berry)',
-                padding: '0.5rem 1rem',
-                fontSize: '0.82rem'
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 216, 138, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
               }}
             >
-              <Send size={13} />
-              <span>{isDelivering ? 'Dispatching...' : 'Send Sweet Dream'}</span>
-            </button>
+              <CheckCircle2 size={18} color="#ffd88a" />
+            </div>
+            <div>
+              <div className="font-mono" style={{ fontSize: '0.72rem', color: '#ffd88a' }}>
+                CURRENT TARGET: {activeStop.label.toUpperCase()}
+              </div>
+              <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#fff8f1' }}>
+                {activeStop.recipient} • <span style={{ fontStyle: 'italic', fontWeight: 400, color: '#c9ceff' }}>"{activeStop.dreamType}"</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

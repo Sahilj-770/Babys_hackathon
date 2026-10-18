@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Lamp, Sparkles, SunDim } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Lamp, SunDim } from 'lucide-react';
 import { soundEngine } from '../../audio/soundEngine';
 import type { LanternVariant } from '../../types';
 
@@ -9,8 +9,8 @@ const LANTERNS: LanternVariant[] = [
     name: 'Starlight Dream',
     glowColor: '#ffd88a',
     textColor: '#5c4033',
-    ambientFilter: 'drop-shadow(0 0 25px rgba(255, 216, 138, 0.85)) drop-shadow(0 0 50px rgba(255, 216, 138, 0.4))',
-    description: 'Infused with golden constellation dust. Best for children afraid of shadows.',
+    ambientFilter: 'drop-shadow(0 0 35px rgba(255, 216, 138, 0.95)) drop-shadow(0 0 70px rgba(255, 216, 138, 0.5))',
+    description: 'Infused with golden constellation dust. Best for dreamers afraid of nighttime shadows.',
     vibe: 'WARM // 2700K'
   },
   {
@@ -18,8 +18,8 @@ const LANTERNS: LanternVariant[] = [
     name: 'Lavender Slumber',
     glowColor: '#c4b5fd',
     textColor: '#4c1d95',
-    ambientFilter: 'drop-shadow(0 0 25px rgba(196, 181, 253, 0.9)) drop-shadow(0 0 55px rgba(139, 92, 246, 0.45))',
-    description: 'Scented with dream thyme and twilight lavender petals. Deepens REM sleep.',
+    ambientFilter: 'drop-shadow(0 0 35px rgba(196, 181, 253, 0.95)) drop-shadow(0 0 70px rgba(139, 92, 246, 0.5))',
+    description: 'Scented with dream thyme and twilight petals. Deepens calming REM sleep waves.',
     vibe: 'CALM // 450nm'
   },
   {
@@ -27,8 +27,8 @@ const LANTERNS: LanternVariant[] = [
     name: 'Hearth Amber',
     glowColor: '#fdba74',
     textColor: '#7c2d12',
-    ambientFilter: 'drop-shadow(0 0 25px rgba(253, 186, 116, 0.9)) drop-shadow(0 0 60px rgba(234, 88, 12, 0.4))',
-    description: 'Simulates the gentle crackle of an autumn nursery fireplace.',
+    ambientFilter: 'drop-shadow(0 0 35px rgba(253, 186, 116, 0.95)) drop-shadow(0 0 75px rgba(234, 88, 12, 0.45))',
+    description: 'Simulates the gentle, comforting crackle of an autumn nursery hearth fireplace.',
     vibe: 'COZY // 2200K'
   },
   {
@@ -36,8 +36,8 @@ const LANTERNS: LanternVariant[] = [
     name: 'Moonlit Aurora',
     glowColor: '#6ee7b7',
     textColor: '#064e3b',
-    ambientFilter: 'drop-shadow(0 0 25px rgba(110, 231, 183, 0.9)) drop-shadow(0 0 55px rgba(16, 185, 129, 0.45))',
-    description: 'Soft greenish-blue waves for dreamers who wish to fly over silent oceans.',
+    ambientFilter: 'drop-shadow(0 0 35px rgba(110, 231, 183, 0.95)) drop-shadow(0 0 70px rgba(16, 185, 129, 0.5))',
+    description: 'Soft greenish-blue nocturnal waves for quiet flights over sleeping oceans.',
     vibe: 'AURORA // 520nm'
   }
 ];
@@ -46,9 +46,9 @@ export const NightlightCollection: React.FC = () => {
   const [selected, setSelected] = useState<LanternVariant>(LANTERNS[0]);
   const [brightness, setBrightness] = useState<number>(85);
 
-  // Sync ambient root glow when lantern or brightness changes
+  // Synchronize dynamic global glow color with the document
   useEffect(() => {
-    const alphaHex = Math.round((brightness / 100) * 120)
+    const alphaHex = Math.round((brightness / 100) * 140)
       .toString(16)
       .padStart(2, '0');
     document.documentElement.style.setProperty('--glow-color', `${selected.glowColor}${alphaHex}`);
@@ -57,174 +57,178 @@ export const NightlightCollection: React.FC = () => {
   const handleSelect = (lantern: LanternVariant) => {
     setSelected(lantern);
     soundEngine.playClick(580);
-    soundEngine.playMusicBoxNote(784, 0.8);
+    soundEngine.playMusicBoxNote(784, 1.1);
   };
 
   return (
     <div
-      className="retro-window"
+      id="nightlight-collection"
+      className="nightlight-exhibit-chamber"
       style={{
-        boxShadow: `0 15px 40px -10px ${selected.glowColor}40`
+        position: 'relative',
+        background: `radial-gradient(circle at 50% 40%, ${selected.glowColor}25 0%, var(--bg-surface) 75%)`,
+        borderRadius: '24px',
+        border: `1.5px solid ${selected.glowColor}55`,
+        boxShadow: `0 20px 50px -15px ${selected.glowColor}40`,
+        padding: '3rem 2rem',
+        overflow: 'hidden',
+        transition: 'all 0.6s ease'
       }}
     >
-      <div className="retro-window-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Lamp size={14} color="var(--color-berry)" />
-          <span>EXHIBIT 02: NIGHTLIGHT_COLLECTION.APP</span>
-        </div>
-        <span style={{ color: 'var(--color-berry)' }}>LANTERN CALIBRATION</span>
-      </div>
+      {/* Background celestial constellation ring */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '600px',
+          height: '600px',
+          borderRadius: '50%',
+          border: `1px dashed ${selected.glowColor}30`,
+          pointerEvents: 'none'
+        }}
+      />
 
-      <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '220px' }}>
-            <h3 className="font-serif" style={{ fontSize: '1.4rem', color: 'var(--text-heading)' }}>
-              Interactive Dream Lanterns
-            </h3>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-              Every sleepy room needs a guardian lamp. Select a wavelength below to cast a soothing hue
-              over the nursery canvas.
-            </p>
-          </div>
-
-          {/* Brightness dimmer slider */}
+      <div
+        style={{
+          maxWidth: '960px',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 2,
+          gap: '2rem'
+        }}
+      >
+        {/* Exhibit Header */}
+        <div>
           <div
+            className="font-mono"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.5rem',
-              backgroundColor: 'var(--bg-retro-panel)',
-              padding: '0.4rem 0.8rem',
+              gap: '0.45rem',
+              padding: '0.35rem 0.95rem',
+              backgroundColor: `${selected.glowColor}20`,
               borderRadius: '999px',
-              border: '1px solid var(--border-color)'
+              border: `1px solid ${selected.glowColor}60`,
+              color: 'var(--text-main)',
+              fontSize: '0.74rem',
+              letterSpacing: '0.05em',
+              marginBottom: '0.75rem'
             }}
           >
-            <SunDim size={15} color="var(--text-muted)" />
-            <span className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              LUMENS:
-            </span>
-            <input
-              type="range"
-              min="30"
-              max="100"
-              value={brightness}
-              onChange={(e) => setBrightness(Number(e.target.value))}
-              aria-label="Adjust lantern brightness"
-              style={{
-                width: '80px',
-                accentColor: 'var(--color-berry)',
-                cursor: 'pointer'
-              }}
-            />
-            <span className="font-mono" style={{ fontSize: '0.75rem', fontWeight: 700 }}>
-              {brightness}%
-            </span>
+            <Lamp size={13} color="var(--color-berry)" />
+            <span>EXHIBIT 02 // ATMOSPHERIC LIGHTING</span>
           </div>
+          <h3
+            className="font-serif"
+            style={{
+              fontSize: 'clamp(1.9rem, 3.4vw, 2.6rem)',
+              color: 'var(--text-heading)',
+              margin: 0
+            }}
+          >
+            The Celestial Nightlight Collection
+          </h3>
+          <p
+            style={{
+              fontSize: '1rem',
+              color: 'var(--text-muted)',
+              maxWidth: '620px',
+              margin: '0.65rem auto 0',
+              lineHeight: 1.6
+            }}
+          >
+            Select a soothing dream spectrum below. The lantern's optical aura synchronizes directly
+            with the nursery canvas, washing the entire scene in radiant starlight.
+          </p>
         </div>
 
-        {/* Live Interactive Lantern Display */}
+        {/* Centerpiece: Large Radiant Lantern Artwork */}
         <div
           style={{
             position: 'relative',
-            borderRadius: '16px',
-            backgroundColor: 'var(--bg-surface)',
-            border: `2px solid ${selected.glowColor}80`,
-            padding: '2.5rem 1.5rem',
+            width: '100%',
+            maxWidth: '340px',
+            aspectRatio: '1 / 1',
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden',
-            minHeight: '260px',
-            transition: 'border-color 0.4s ease'
+            cursor: 'pointer'
           }}
+          onClick={() => soundEngine.playMusicBoxNote(880, 1.2)}
+          title="Click to bathe in gentle lantern glow"
         >
-          {/* Dynamic background ambient glow */}
+          {/* Intense breathing radial aura */}
           <div
             style={{
               position: 'absolute',
-              width: '260px',
-              height: '260px',
+              width: '85%',
+              height: '85%',
               borderRadius: '50%',
               backgroundColor: selected.glowColor,
-              opacity: (brightness / 100) * 0.5,
-              filter: 'blur(55px)',
-              transition: 'all 0.4s ease',
-              pointerEvents: 'none'
+              filter: 'blur(45px)',
+              opacity: (brightness / 100) * 0.75,
+              transition: 'all 0.5s ease',
+              zIndex: 0
             }}
           />
 
-          {/* Official Dream Lantern Image */}
-          <div
+          <img
+            src="/assets/pip_dream_lantern.png"
+            alt="Pip's glowing starlight dream lantern"
             style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              filter: selected.ambientFilter,
               position: 'relative',
-              width: '180px',
-              height: '180px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              zIndex: 1,
+              transform: 'scale(1.02)',
+              transition: 'filter 0.5s ease, transform 0.3s ease'
             }}
-          >
-            <img
-              src="/assets/pip_dream_lantern.png"
-              alt="Pip's glowing starlight dream lantern"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                filter: `${selected.ambientFilter}`,
-                opacity: brightness / 100,
-                transition: 'filter 0.4s ease, opacity 0.2s ease'
-              }}
-            />
-          </div>
-
-          {/* Active lantern metadata readout */}
-          <div
-            style={{
-              marginTop: '1.25rem',
-              textAlign: 'center',
-              zIndex: 1
-            }}
-          >
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color: 'var(--text-heading)'
-              }}
-            >
-              <Sparkles size={14} color={selected.glowColor} />
-              <span>{selected.name}</span>
-              <span
-                className="font-mono"
-                style={{
-                  padding: '0.1rem 0.45rem',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--bg-retro-panel)',
-                  fontSize: '0.72rem',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-muted)'
-                }}
-              >
-                {selected.vibe}
-              </span>
-            </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.35rem', maxWidth: '380px' }}>
-              {selected.description}
-            </p>
-          </div>
+          />
         </div>
 
-        {/* Lantern Switcher Buttons */}
+        {/* Selected Spectrum Metadata Readout */}
         <div
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.25rem',
+            padding: '0.5rem 1.25rem',
+            backgroundColor: 'var(--bg-surface)',
+            borderRadius: '999px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.04)'
+          }}
+          className="font-mono"
+        >
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)' }}>
+            {selected.name}
+          </span>
+          <span style={{ opacity: 0.3 }}>•</span>
+          <span style={{ fontSize: '0.74rem', color: 'var(--color-berry)' }}>{selected.vibe}</span>
+          <span style={{ opacity: 0.3 }}>•</span>
+          <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            LUMENS: {brightness}%
+          </span>
+        </div>
+
+        {/* 4 Interactive Lantern Crystal Selection Buttons */}
+        <div
+          role="radiogroup"
+          aria-label="Select dream lantern spectrum"
+          style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-            gap: '0.75rem'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '1rem',
+            width: '100%',
+            maxWidth: '840px'
           }}
         >
           {LANTERNS.map((lantern) => {
@@ -232,38 +236,105 @@ export const NightlightCollection: React.FC = () => {
             return (
               <button
                 key={lantern.id}
+                role="radio"
+                aria-checked={isCurrent}
                 onClick={() => handleSelect(lantern)}
-                aria-pressed={isCurrent}
                 style={{
-                  background: isCurrent ? 'var(--bg-card)' : 'var(--bg-surface)',
-                  border: `2px solid ${isCurrent ? 'var(--color-berry)' : 'var(--border-color)'}`,
-                  borderRadius: '10px',
-                  padding: '0.75rem 0.6rem',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '1.1rem 1rem',
+                  borderRadius: '16px',
+                  backgroundColor: isCurrent ? 'var(--bg-surface)' : 'var(--bg-retro-panel)',
+                  border: isCurrent
+                    ? `2px solid ${lantern.glowColor}`
+                    : '1.5px solid var(--border-color)',
+                  boxShadow: isCurrent ? `0 8px 24px ${lantern.glowColor}50` : 'none',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  boxShadow: isCurrent ? `2px 2px 0 ${lantern.glowColor}` : 'none',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.25s ease'
                 }}
               >
-                <span
+                <div
                   style={{
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    backgroundColor: lantern.glowColor,
-                    boxShadow: `0 0 8px ${lantern.glowColor}`,
-                    flexShrink: 0
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    marginBottom: '0.35rem',
+                    width: '100%'
                   }}
-                />
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-heading)' }}>
-                  {lantern.name}
-                </span>
+                >
+                  <span
+                    style={{
+                      width: '14px',
+                      height: '14px',
+                      borderRadius: '50%',
+                      backgroundColor: lantern.glowColor,
+                      boxShadow: `0 0 10px ${lantern.glowColor}`,
+                      display: 'inline-block',
+                      flexShrink: 0
+                    }}
+                  />
+                  <span
+                    className="font-serif"
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: 'var(--text-heading)'
+                    }}
+                  >
+                    {lantern.name}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: '0.78rem',
+                    lineHeight: 1.45,
+                    color: 'var(--text-muted)',
+                    margin: 0
+                  }}
+                >
+                  {lantern.description}
+                </p>
               </button>
             );
           })}
+        </div>
+
+        {/* Lumens Brightness Dimmer Control */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            backgroundColor: 'var(--bg-surface)',
+            padding: '0.65rem 1.4rem',
+            borderRadius: '999px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 4px 12px rgba(92, 64, 51, 0.05)',
+            width: 'fit-content'
+          }}
+        >
+          <SunDim size={16} color="var(--color-berry)" />
+          <span className="font-mono" style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+            DIMMER:
+          </span>
+          <input
+            type="range"
+            min="30"
+            max="100"
+            value={brightness}
+            onChange={(e) => setBrightness(parseInt(e.target.value, 10))}
+            aria-label="Lantern brightness lumens slider"
+            style={{
+              accentColor: 'var(--color-berry)',
+              cursor: 'pointer',
+              width: '140px'
+            }}
+          />
+          <span className="font-mono" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+            {brightness}%
+          </span>
         </div>
       </div>
     </div>

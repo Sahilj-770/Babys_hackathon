@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Compass, BookOpen, Heart, Moon, Volume2, ArrowRight } from 'lucide-react';
+import { Compass, Volume2 } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { soundEngine } from '../../audio/soundEngine';
@@ -10,10 +10,9 @@ interface Scene {
   id: number;
   act: string;
   title: string;
-  tagline: string;
+  subtitle: string;
   story: string;
   wordCount: number;
-  highlight: string;
   color: string;
   noteFreq: number;
   noteName: string;
@@ -23,41 +22,41 @@ interface Scene {
 const SCENES: Scene[] = [
   {
     id: 1,
-    act: 'SCENE I',
+    act: 'ACT I',
     title: 'The Lost Starlight Lantern',
-    tagline: 'When the nursery lost its golden glow',
-    story: 'Before Pip wore the starry nightcap, Midnight Nursery was quiet and pitch-black. Restless babies tossed in cribs as shadows lengthened across creaking hardwood floors. Pip stumbled upon a hollowed brass lantern buried under discarded music sheets. When Pip touched the glass, a tiny constellation ignited inside, illuminating Pip\'s soft glowing eye sockets with gentle warmth instead of fear. That night, the first baby slept soundly.',
-    wordCount: 69,
-    highlight: '69 words (under 150 canon limit)',
+    subtitle: 'When the nursery lost its golden glow',
+    story:
+      'Before Pip wore the starry nightcap, Midnight Nursery was quiet and pitch-black. Restless babies tossed in cribs as shadows lengthened across creaking hardwood floors. Pip stumbled upon a hollowed brass lantern buried under discarded music sheets. When Pip touched the glass, a tiny constellation ignited inside, illuminating Pip\'s soft glowing eye sockets with gentle warmth instead of fear. That night, the first baby slept soundly.',
+    wordCount: 65,
     color: '#ffd88a',
-    noteFreq: 523.25, // C5
-    noteName: '523 Hz (Warm Glow)',
+    noteFreq: 523.25,
+    noteName: '523 Hz (Lantern Ember)',
     assetImg: '/assets/pip_dream_lantern.png'
   },
   {
     id: 2,
-    act: 'SCENE II',
+    act: 'ACT II',
     title: 'The Dream-Engine Invention',
-    tagline: 'Gears, velvet ribbons, and 432Hz chimes',
-    story: 'One lantern wasn\'t enough for an entire town of sleepless dreamers. In a dusty nursery alcove, Pip gathered antique clockwork cogs, cotton clouds, and a brass music-box cylinder. Tinkering until dawn with sleepy determination, Pip built DreamOS \'99—a whimsical contraption that could translate whispered lullabies into sweet lavender dreams. The tiny crooked smile formed: Pip was officially the nursery\'s first Junior Dream Engineer.',
-    wordCount: 67,
-    highlight: '67 words (under 150 canon limit)',
+    subtitle: 'Gears, velvet ribbons, and 432Hz chimes',
+    story:
+      'One lantern wasn\'t enough for an entire town of sleepless dreamers. In a dusty nursery alcove, Pip gathered antique clockwork cogs, cotton clouds, and a brass music-box cylinder. Tinkering until dawn with sleepy determination, Pip built DreamOS \'99—a whimsical contraption that could translate whispered lullabies into sweet lavender dreams. The tiny crooked smile formed: Pip was officially the nursery\'s first Junior Dream Engineer.',
+    wordCount: 63,
     color: '#ffb3ba',
-    noteFreq: 659.25, // E5
-    noteName: '659 Hz (Clockwork Lullaby)',
+    noteFreq: 659.25,
+    noteName: '659 Hz (Music Box Core)',
     assetImg: '/assets/pip_lullaby_box.png'
   },
   {
     id: 3,
-    act: 'SCENE III',
+    act: 'ACT III',
     title: 'First Flight Across the Rooftops',
-    tagline: 'Slumber delivered to chimney pots',
-    story: 'At midnight sharp, Pip loaded the velvet pouch with fresh slumber vials. Stepping onto a buoyant cumulus cloud, Pip drifted over sleeping chimney stacks, weather vanes, and quiet cobblestone alleys. Pip tapped every rooftop with starlight dust, leaving each home wrapped in calm, velvet silence. Looking back at the moon, Pip finally pulled the nightcap low and curled up for a well-earned nap.',
-    wordCount: 68,
-    highlight: '68 words (under 150 canon limit)',
-    color: '#bae1ff',
-    noteFreq: 783.99, // G5
-    noteName: '784 Hz (Moonlit Cloud)',
+    subtitle: 'Slumber delivered to quiet chimney pots',
+    story:
+      'At midnight sharp, Pip loaded the velvet pouch with fresh slumber vials. Stepping onto a buoyant cumulus cloud, Pip drifted over sleeping chimney stacks, weather vanes, and quiet cobblestone alleys. Pip tapped every rooftop with starlight dust, leaving each home wrapped in calm, velvet silence. Looking back at the moon, Pip finally pulled the nightcap low and curled up for a well-earned nap.',
+    wordCount: 63,
+    color: '#c4b5fd',
+    noteFreq: 783.99,
+    noteName: '784 Hz (Midnight Cloud)',
     assetImg: '/assets/pip_avatar_cloud.png'
   }
 ];
@@ -65,7 +64,6 @@ const SCENES: Scene[] = [
 export const OriginStory: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // GSAP ScrollTrigger choreography for the 3 sequential acts
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -80,16 +78,14 @@ export const OriginStory: React.FC = () => {
         const { isNormalMotion } = context.conditions as { isNormalMotion: boolean };
 
         if (isNormalMotion) {
-          // Reversible smooth scroll entrance for each story act
-          gsap.utils.toArray<HTMLElement>('.origin-scroll-act').forEach((actEl) => {
+          gsap.utils.toArray<HTMLElement>('.origin-storybook-act').forEach((actEl) => {
             gsap.fromTo(
               actEl,
-              { opacity: 0, y: 44, scale: 0.97 },
+              { opacity: 0, y: 50 },
               {
                 opacity: 1,
                 y: 0,
-                scale: 1,
-                duration: 0.85,
+                duration: 0.9,
                 ease: 'power2.out',
                 scrollTrigger: {
                   trigger: actEl,
@@ -100,9 +96,6 @@ export const OriginStory: React.FC = () => {
               }
             );
           });
-        } else {
-          // Accessible reduced motion
-          gsap.set('.origin-scroll-act', { opacity: 1, y: 0, scale: 1 });
         }
       }
     );
@@ -110,227 +103,208 @@ export const OriginStory: React.FC = () => {
     return () => mm.revert();
   }, []);
 
-  const scrollToAct = (id: number) => {
-    const el = document.getElementById(`story-act-${id}`);
-    if (el) {
-      soundEngine.playClick(440 + id * 60);
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+  const handlePlaySceneChime = (scene: Scene) => {
+    soundEngine.playMusicBoxNote(scene.noteFreq, 1.4);
   };
 
   return (
-    <section id="story" ref={containerRef} style={{ width: '100%' }}>
+    <section
+      id="story"
+      ref={containerRef}
+      className="origin-story-section"
+      style={{
+        position: 'relative',
+        maxWidth: '1100px',
+        margin: '0 auto',
+        padding: '5rem 1.5rem',
+        zIndex: 2
+      }}
+    >
       {/* Editorial Header */}
-      <div style={{ textAlign: 'center', marginBottom: '3rem', position: 'relative', zIndex: 1 }}>
+      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
         <div
+          className="font-mono"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.45rem',
             padding: '0.35rem 0.95rem',
-            backgroundColor: 'var(--bg-retro-panel)',
-            border: '1px solid var(--border-color)',
+            backgroundColor: 'rgba(255, 216, 138, 0.12)',
             borderRadius: '999px',
+            border: '1px solid rgba(255, 216, 138, 0.3)',
+            color: '#ffd88a',
             fontSize: '0.78rem',
-            color: 'var(--text-muted)',
-            marginBottom: '1rem'
+            marginBottom: '0.85rem'
           }}
-          className="font-mono"
         >
-          <BookOpen size={13} color="var(--color-berry)" />
-          <span>CANON CHRONICLES // 3 REVERSIBLE ACTS</span>
+          <Compass size={13} color="#ffd88a" />
+          <span>CANON CHRONICLES // 3 ILLUSTRATED ACTS</span>
         </div>
-
         <h2
           className="font-serif"
           style={{
-            fontSize: 'clamp(2rem, 4.2vw, 3.2rem)',
-            color: 'var(--text-heading)',
-            lineHeight: 1.15,
-            maxWidth: '850px',
-            margin: '0 auto'
+            fontSize: 'clamp(2.4rem, 4.4vw, 3.6rem)',
+            color: '#fff8f1',
+            margin: 0,
+            textShadow: '0 2px 25px rgba(255, 216, 138, 0.35)'
           }}
         >
-          How a Sleepy Skull Baby Became a Dream Engineer
+          How Pip Became the Dream Engineer
         </h2>
         <p
-          className="story-lead-desc"
           style={{
-            maxWidth: '640px',
-            margin: '0.75rem auto 1.5rem',
-            fontSize: '1.02rem',
+            color: '#c9ceff',
+            maxWidth: '620px',
+            margin: '0.75rem auto 0',
+            fontSize: '1.05rem',
             lineHeight: 1.6
           }}
         >
-          Scroll downward through the midnight nursery archives. Each chapter unfolds in under 150 words,
-          illuminating Pip's gentle mythology of lanterns, clockwork lullabies, and rooftop clouds.
+          A three-part bedtime journey through the quiet founding of Midnight Nursery. Each chapter is
+          under 150 words and accompanied by Pip's resonant acoustic harmonic.
         </p>
-
-        {/* Quick-Jump Navigation Pills */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: '0.6rem',
-            marginTop: '0.5rem'
-          }}
-        >
-          {SCENES.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => scrollToAct(s.id)}
-              className="retro-btn"
-              style={{
-                fontSize: '0.78rem',
-                padding: '0.35rem 0.8rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                cursor: 'pointer'
-              }}
-            >
-              <span style={{ color: s.color }}>✦</span>
-              <span>{s.act}: {s.title.split(' ')[1] || s.title}</span>
-              <ArrowRight size={12} />
-            </button>
-          ))}
-        </div>
       </div>
 
-      {/* Sequential 3-Act Scroll Timeline */}
-      <div className="story-timeline-track">
-        {SCENES.map((scene, idx) => (
-          <article
-            key={scene.id}
-            id={`story-act-${scene.id}`}
-            className="retro-window origin-scroll-act story-act-card"
-            style={{
-              borderColor: 'var(--border-color)',
-              overflow: 'hidden'
-            }}
-          >
-            {/* Act Window Header */}
-            <div className="retro-window-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <Compass size={14} color="var(--color-berry)" />
-                <span className="font-mono" style={{ fontSize: '0.75rem' }}>
-                  ORIGIN_ACT_{scene.id}.LOG // {scene.act}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: '0.7rem',
-                    color: scene.color,
-                    fontWeight: 700
-                  }}
-                >
-                  {scene.highlight}
-                </span>
-              </div>
-            </div>
+      {/* Storybook Acts Stream */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4.5rem',
+          position: 'relative'
+        }}
+      >
+        {/* Constellation thread line down the center on desktop */}
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '40px',
+            bottom: '40px',
+            width: '2px',
+            background: 'linear-gradient(180deg, rgba(255, 216, 138, 0.3) 0%, rgba(196, 181, 253, 0.4) 50%, rgba(255, 216, 138, 0.1) 100%)',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            zIndex: 0
+          }}
+          className="story-thread-line"
+        />
 
-            {/* Act Content Grid */}
-            <div
+        {SCENES.map((scene, idx) => {
+          const isEven = idx % 2 === 1;
+          return (
+            <article
+              key={scene.id}
+              id={`act-${scene.id}`}
+              className="origin-storybook-act"
               style={{
-                padding: '2.25rem 1.75rem',
+                position: 'relative',
+                zIndex: 1,
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '2.25rem',
-                alignItems: 'center'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '2.5rem',
+                alignItems: 'center',
+                backgroundColor: 'rgba(9, 11, 32, 0.85)',
+                backdropFilter: 'blur(16px)',
+                borderRadius: '24px',
+                border: `1.5px solid ${scene.color}35`,
+                padding: '2.5rem',
+                boxShadow: `0 20px 45px -10px ${scene.color}25`,
+                transition: 'all 0.4s ease'
               }}
             >
-              {/* Asset Showcase with Ambient Lantern Bloom */}
+              {/* Image Column */}
               <div
                 style={{
-                  position: 'relative',
-                  borderRadius: '16px',
-                  backgroundColor: 'var(--bg-retro-panel)',
-                  border: '1.5px solid var(--border-color)',
-                  padding: '2rem 1.5rem',
+                  order: isEven ? 2 : 1,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  overflow: 'hidden',
-                  order: idx % 2 === 1 ? 2 : 1
+                  position: 'relative'
                 }}
               >
-                {/* Scene-specific colored lantern bloom */}
+                {/* Colored Halo */}
                 <div
                   style={{
                     position: 'absolute',
-                    width: '180px',
-                    height: '180px',
+                    width: '75%',
+                    height: '75%',
                     borderRadius: '50%',
                     backgroundColor: scene.color,
+                    filter: 'blur(45px)',
                     opacity: 0.35,
-                    filter: 'blur(35px)',
                     pointerEvents: 'none'
                   }}
                 />
 
-                <img
-                  src={scene.assetImg}
-                  alt={scene.title}
-                  style={{
-                    width: '190px',
-                    height: '190px',
-                    objectFit: 'contain',
-                    position: 'relative',
-                    zIndex: 1,
-                    filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.2))',
-                    transition: 'transform 0.4s ease'
-                  }}
-                />
-
                 <div
-                  className="font-mono"
                   style={{
-                    marginTop: '1.25rem',
-                    fontSize: '0.72rem',
-                    padding: '0.25rem 0.65rem',
-                    borderRadius: '6px',
-                    backgroundColor: 'var(--bg-surface)',
-                    border: '1px solid var(--border-color)',
-                    color: 'var(--text-muted)'
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '260px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
-                  <span>OFFICIAL ASSET // ARCHIVE NO. 0{scene.id}</span>
+                  <img
+                    src={scene.assetImg}
+                    alt={scene.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      filter: `drop-shadow(0 10px 25px ${scene.color}50)`,
+                      position: 'relative',
+                      zIndex: 1
+                    }}
+                  />
                 </div>
               </div>
 
-              {/* Narrative Content */}
+              {/* Narrative Content Column */}
               <div
                 style={{
+                  order: isEven ? 1 : 2,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1rem',
-                  order: idx % 2 === 1 ? 1 : 2
+                  gap: '1rem'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <span
                     className="font-mono"
                     style={{
                       fontSize: '0.74rem',
-                      fontWeight: 700,
-                      color: 'var(--color-berry)',
-                      letterSpacing: '0.08em'
+                      color: scene.color,
+                      letterSpacing: '0.08em',
+                      fontWeight: 700
                     }}
                   >
-                    {scene.act} • {scene.tagline.toUpperCase()}
+                    {scene.act} • {scene.subtitle.toUpperCase()}
+                  </span>
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: '0.68rem',
+                      color: '#a3a8d8',
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      padding: '0.15rem 0.45rem',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    {scene.wordCount} WORDS [STRICT &lt; 150]
                   </span>
                 </div>
 
                 <h3
                   className="font-serif"
                   style={{
-                    fontSize: 'clamp(1.5rem, 2.8vw, 2.1rem)',
-                    color: 'var(--text-heading)',
+                    fontSize: 'clamp(1.7rem, 2.6vw, 2.2rem)',
+                    color: '#fff8f1',
+                    margin: 0,
                     lineHeight: 1.2
                   }}
                 >
@@ -340,87 +314,37 @@ export const OriginStory: React.FC = () => {
                 <p
                   style={{
                     fontSize: '1.02rem',
-                    lineHeight: 1.7,
-                    color: 'var(--text-main)',
-                    backgroundColor: 'var(--bg-surface)',
-                    padding: '1.25rem 1.4rem',
-                    borderRadius: '12px',
-                    border: '1px solid var(--border-color)',
-                    margin: 0
+                    lineHeight: 1.65,
+                    color: '#eaeaff',
+                    fontStyle: 'normal'
                   }}
                 >
                   "{scene.story}"
                 </p>
 
-                {/* Interactive Audio Harmonic Button */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '0.5rem',
-                    marginTop: '0.25rem'
-                  }}
-                >
+                {/* Scene Chime Action Button */}
+                <div style={{ paddingTop: '0.5rem' }}>
                   <button
-                    onClick={() => soundEngine.playMusicBoxNote(scene.noteFreq, 1.4)}
+                    onClick={() => handlePlaySceneChime(scene)}
                     className="retro-btn"
                     style={{
-                      fontSize: '0.78rem',
-                      padding: '0.4rem 0.85rem',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      cursor: 'pointer',
-                      backgroundColor: 'var(--bg-surface)',
-                      borderColor: scene.color
+                      backgroundColor: 'rgba(255, 248, 241, 0.1)',
+                      color: '#ffd88a',
+                      borderColor: `${scene.color}60`,
+                      fontSize: '0.82rem',
+                      padding: '0.5rem 1rem'
                     }}
-                    title={`Play ${scene.title} bedtime harmonic frequency`}
-                    aria-label={`Play ${scene.title} bedtime harmonic frequency`}
+                    title={`Play harmonic frequency for ${scene.title}`}
                   >
-                    <Volume2 size={13} color="var(--color-berry)" />
-                    <span>Play Scene Harmonic ({scene.noteName})</span>
+                    <Volume2 size={14} color={scene.color} />
+                    <span className="font-mono">PLAY HARMONIC ({scene.noteName})</span>
                   </button>
-
-                  <span
-                    className="font-mono"
-                    style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}
-                  >
-                    Words: {scene.wordCount} / 150 limit
-                  </span>
                 </div>
               </div>
-            </div>
-
-            {/* Act Reassurance Footer */}
-            <div
-              style={{
-                padding: '0.65rem 1.25rem',
-                backgroundColor: 'var(--bg-retro-panel)',
-                borderTop: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.72rem',
-                color: 'var(--text-muted)'
-              }}
-              className="font-mono"
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Heart size={12} color="var(--color-berry)" />
-                <span>CANON: Gentle, sleepy, non-scary mythology</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Moon size={12} color="var(--color-gold)" />
-                <span>REVERSIBLE SCROLL CHOREOGRAPHY</span>
-              </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 };
-
-export default OriginStory;
