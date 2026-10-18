@@ -128,6 +128,44 @@ class SoundEngine {
       }, idx * 110);
     });
   }
+
+  // Gentle ascending starlight chime for Dream Forge
+  public playForgeSpark() {
+    if (this.isMuted) return;
+    const chords = [587.33, 739.99, 880.0, 1174.66]; // D5, F#5, A5, D6
+    chords.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playMusicBoxNote(freq, 0.9);
+      }, idx * 75);
+    });
+  }
+
+  // Soft resonant bubble pop for catching dreams
+  public playCatchBubble(pitchMultiplier: number = 1) {
+    if (this.isMuted) return;
+    try {
+      if (!this.initContext() || !this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const now = this.ctx.currentTime;
+
+      osc.type = 'sine';
+      const startFreq = 420 * pitchMultiplier;
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(startFreq * 2.2, now + 0.08);
+
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } catch {
+      // Audio autoplay handled silently
+    }
+  }
 }
 
 export const soundEngine = new SoundEngine();

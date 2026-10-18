@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Lightbulb } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -34,11 +34,56 @@ export const CinematicScrollSequence: React.FC = () => {
   const textFlightRef = useRef<HTMLParagraphElement>(null);
 
   const [pathLength, setPathLength] = useState(650);
+  const [isLanternVision, setIsLanternVision] = useState(false);
+
+  // Feature 2: Lantern Vision Pointer Tracking (Direct CSS variables, zero React re-render thrashing)
+  useEffect(() => {
+    if (!isLanternVision || !pinSectionRef.current) return;
+
+    const el = pinSectionRef.current;
+
+    const updatePointer = (clientX: number, clientY: number) => {
+      const rect = el.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      el.style.setProperty('--lantern-x', `${x}px`);
+      el.style.setProperty('--lantern-y', `${y}px`);
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      updatePointer(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        updatePointer(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    };
+
+    el.addEventListener('pointermove', handlePointerMove, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      el.removeEventListener('pointermove', handlePointerMove);
+      el.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isLanternVision]);
+
+  const toggleLanternVision = () => {
+    setIsLanternVision((prev) => {
+      const next = !prev;
+      soundEngine.playClick(next ? 580 : 360);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (flightPathRef.current) {
       const len = flightPathRef.current.getTotalLength();
       setPathLength(len);
+    }
+    if (stagePillTextRef.current) {
+      stagePillTextRef.current.textContent = 'ACT II: THE AWAKENING // LANTERN STIRS';
     }
   }, []);
 
@@ -403,17 +448,21 @@ export const CinematicScrollSequence: React.FC = () => {
         }}
       />
 
-      {/* Top Editorial Status Pill (Positioned safely below sticky navbar) */}
+      {/* Top Editorial Status Pill & Lantern Vision Toggle */}
       <div
         style={{
           position: 'absolute',
           top: '4.8rem',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 10,
+          zIndex: 12,
           textAlign: 'center',
           maxWidth: '90%',
-          width: 'fit-content'
+          width: 'fit-content',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.45rem'
         }}
       >
         <div
@@ -433,8 +482,35 @@ export const CinematicScrollSequence: React.FC = () => {
           }}
         >
           <Sparkles size={13} color="#ffd88a" />
-          <span ref={stagePillTextRef}>ACT II: THE AWAKENING // LANTERN STIRS</span>
+          <span ref={stagePillTextRef} />
         </div>
+
+        {/* Feature 2: Lantern Vision Explicit Toggle */}
+        <button
+          onClick={toggleLanternVision}
+          className="retro-btn"
+          aria-pressed={isLanternVision}
+          title="Toggle Lantern Vision flashlight beam to reveal hidden night secrets"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.35rem 0.95rem',
+            borderRadius: '999px',
+            backgroundColor: isLanternVision ? '#ffd88a' : 'rgba(5, 7, 24, 0.78)',
+            border: isLanternVision ? '1.5px solid #ffd88a' : '1px solid rgba(255, 216, 138, 0.4)',
+            color: isLanternVision ? '#26160f' : '#ffd88a',
+            fontSize: '0.74rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            backdropFilter: 'blur(8px)',
+            boxShadow: isLanternVision ? '0 0 16px rgba(255, 216, 138, 0.6)' : '0 2px 10px rgba(0,0,0,0.3)',
+            transition: 'all 0.25s ease'
+          }}
+        >
+          <Lightbulb size={13} />
+          <span>Lantern Vision: {isLanternVision ? 'ACTIVE [ON]' : 'OFF'}</span>
+        </button>
       </div>
 
       {/* Central Lantern Stage with Converging Star Particles */}
@@ -677,6 +753,145 @@ export const CinematicScrollSequence: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* =========================================================================
+          FEATURE 2: LANTERN VISION LAYERS (Pointer-events: none, GPU-composited)
+          ========================================================================= */}
+
+      {/* 1. Ambient Darkening Veil */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(2, 4, 14, 0.72)',
+          opacity: isLanternVision ? 1 : 0,
+          pointerEvents: 'none',
+          transition: 'opacity 0.4s ease',
+          zIndex: 8
+        }}
+      />
+
+      {/* 2. Hidden Constellations, Creatures & Rooftop Secrets Layer (Masked by spotlight) */}
+      <div
+        aria-hidden={!isLanternVision}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 9,
+          opacity: isLanternVision ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          maskImage:
+            'radial-gradient(circle 200px at var(--lantern-x, 50%) var(--lantern-y, 50%), black 0%, black 50%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(circle 200px at var(--lantern-x, 50%) var(--lantern-y, 50%), black 0%, black 50%, transparent 100%)'
+        }}
+      >
+        <svg
+          viewBox="0 0 1200 800"
+          preserveAspectRatio="none"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        >
+          {/* Secret Constellation: Pip's Golden Key */}
+          <g stroke="#ffd88a" strokeWidth="1.4" strokeDasharray="5 3" opacity="0.95">
+            <line x1="260" y1="210" x2="330" y2="170" />
+            <line x1="330" y1="170" x2="400" y2="200" />
+            <line x1="400" y1="200" x2="350" y2="260" />
+            <line x1="350" y1="260" x2="260" y2="210" />
+            <line x1="400" y1="200" x2="480" y2="200" />
+            <line x1="480" y1="200" x2="480" y2="225" />
+            <line x1="450" y1="200" x2="450" y2="220" />
+          </g>
+          <circle cx="260" cy="210" r="4.5" fill="#ffd88a" filter="drop-shadow(0 0 8px #ffd88a)" />
+          <circle cx="330" cy="170" r="4.5" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)" />
+          <circle cx="400" cy="200" r="5" fill="#ffd88a" filter="drop-shadow(0 0 8px #ffd88a)" />
+          <circle cx="350" cy="260" r="4" fill="#ffffff" filter="drop-shadow(0 0 8px #ffffff)" />
+          <circle cx="480" cy="200" r="4" fill="#ffd88a" filter="drop-shadow(0 0 8px #ffd88a)" />
+          <text
+            x="270"
+            y="150"
+            fill="#ffd88a"
+            fontSize="12"
+            fontFamily="var(--font-mono)"
+            letterSpacing="0.08em"
+            filter="drop-shadow(0 0 6px #ffd88a)"
+          >
+            ✦ CONSTELLATION: PIP'S GOLDEN KEY ✦
+          </text>
+
+          {/* Secret Constellation: Ursa Slumberis (Sleeping Bear) */}
+          <g stroke="#c4b5fd" strokeWidth="1.4" strokeDasharray="4 3" opacity="0.9">
+            <line x1="800" y1="170" x2="860" y2="150" />
+            <line x1="860" y1="150" x2="920" y2="180" />
+            <line x1="920" y1="180" x2="980" y2="160" />
+            <line x1="980" y1="160" x2="1040" y2="200" />
+          </g>
+          <circle cx="800" cy="170" r="3.5" fill="#c4b5fd" />
+          <circle cx="860" cy="150" r="4" fill="#ffffff" />
+          <circle cx="920" cy="180" r="4.5" fill="#c4b5fd" />
+          <circle cx="980" cy="160" r="3.5" fill="#ffffff" />
+          <circle cx="1040" cy="200" r="4" fill="#c4b5fd" />
+          <text
+            x="860"
+            y="135"
+            fill="#c4b5fd"
+            fontSize="12"
+            fontFamily="var(--font-mono)"
+            letterSpacing="0.08em"
+            filter="drop-shadow(0 0 6px #c4b5fd)"
+          >
+            ✧ URSA SLUMBERIS ✧
+          </text>
+
+          {/* Secret Sleep Dormouse on left rooftop gable */}
+          <g transform="translate(180, 500)">
+            <ellipse cx="20" cy="15" rx="14" ry="10" fill="#fde68a" />
+            <circle cx="12" cy="10" r="7" fill="#fde68a" />
+            <polygon points="8,5 6,-2 13,3" fill="#fca5a5" />
+            <path d="M 8 10 Q 10 12 12 10" fill="none" stroke="#78350f" strokeWidth="1.5" />
+            <text x="28" y="6" fill="#ffd88a" fontSize="11" fontFamily="var(--font-mono)">z Z</text>
+            <text x="-12" y="38" fill="#ffd88a" fontSize="11" fontFamily="var(--font-mono)" fontWeight="700">
+              Rooftop Dormouse (Dreaming)
+            </text>
+          </g>
+
+          {/* Luminous Starlight Nightingale on central rooftop */}
+          <g transform="translate(680, 470)">
+            <ellipse cx="20" cy="15" rx="15" ry="9" fill="#93c5fd" />
+            <circle cx="32" cy="10" r="6" fill="#bfdbfe" />
+            <polygon points="38,10 44,12 38,14" fill="#ffd88a" />
+            <text x="42" y="5" fill="#93c5fd" fontSize="14" fontFamily="var(--font-mono)">♪</text>
+            <text x="-8" y="38" fill="#93c5fd" fontSize="11" fontFamily="var(--font-mono)" fontWeight="700">
+              Starlight Nightingale
+            </text>
+          </g>
+
+          {/* Secret Attic 432 Hz Chamber */}
+          <g transform="translate(970, 490)">
+            <rect x="0" y="0" width="46" height="46" rx="6" fill="#ffd88a" opacity="0.35" stroke="#ffd88a" strokeWidth="1.8" />
+            <path d="M 23 0 L 23 46 M 0 23 L 46 23" stroke="#ffd88a" strokeWidth="1.5" />
+            <text x="-35" y="62" fill="#ffd88a" fontSize="11" fontFamily="var(--font-mono)" fontWeight="700">
+              Attic 432 Hz Laboratory
+            </text>
+          </g>
+        </svg>
+      </div>
+
+      {/* 3. Soft Golden Radial Flashlight Beam (Feathered edge, following pointer) */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 10,
+          opacity: isLanternVision ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          background:
+            'radial-gradient(circle 220px at var(--lantern-x, 50%) var(--lantern-y, 50%), rgba(255, 216, 138, 0.35) 0%, rgba(255, 180, 80, 0.12) 50%, transparent 80%)'
+        }}
+      />
 
       {/* Bottom Scroll Indicator */}
       <div

@@ -13,6 +13,7 @@ import { StatusWidget } from './components/StatusWidget';
 import { LullabyLab } from './components/exhibits/LullabyLab';
 import { NightlightCollection } from './components/exhibits/NightlightCollection';
 import { DreamDelivery } from './components/exhibits/DreamDelivery';
+import { DreamForge } from './components/exhibits/DreamForge';
 import { OriginStory } from './components/story/OriginStory';
 import { EasterEggModal } from './components/EasterEggModal';
 import { SparkleTrail } from './components/SparkleTrail';
@@ -174,7 +175,7 @@ export function App() {
                 color: 'var(--text-muted)'
               }}
             >
-              PROJECT DIRECTORY // 3 OPERATIONAL WORKBENCHES
+              PROJECT DIRECTORY // 4 OPERATIONAL WORKBENCHES
             </span>
             <h2
               className="font-serif"
@@ -195,10 +196,15 @@ export function App() {
                 lineHeight: 1.55
               }}
             >
-              Every invention in Midnight Nursery is an operational playground. Strike real-time
-              synthesizer chimes, adjust radiant atmospheric lantern spectrums, and inspect the
-              rooftop delivery flightpath.
+              Every invention in Midnight Nursery is an operational playground. Design a personalized
+              bedtime dream in the Dream Forge, strike synthesizer chimes, calibrate radiant lanterns,
+              and inspect the rooftop delivery flightpath.
             </p>
+          </div>
+
+          {/* Signature Exhibit: The Dream Forge */}
+          <div className="gsap-fade-in">
+            <DreamForge />
           </div>
 
           {/* Exhibit 1: Lullaby Lab */}
