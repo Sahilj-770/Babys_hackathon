@@ -8,17 +8,20 @@ gsap.registerPlugin(ScrollTrigger);
 
 export const CinematicScrollSequence: React.FC = () => {
   const pinSectionRef = useRef<HTMLDivElement>(null);
-  const lanternRef = useRef<HTMLDivElement>(null);
+  const lanternHolderRef = useRef<HTMLDivElement>(null);
   const lanternGlowRef = useRef<HTMLDivElement>(null);
+  const burstFlashRef = useRef<HTMLDivElement>(null);
   const midnightSkyRef = useRef<HTMLDivElement>(null);
+  const starsDeepRef = useRef<HTMLDivElement>(null);
+  const starsForeRef = useRef<HTMLDivElement>(null);
   const rooftopsRef = useRef<HTMLDivElement>(null);
-  const windowsRef = useRef<SVGGElement>(null);
+  const windowsGroupRef = useRef<SVGGElement>(null);
   const flightPathRef = useRef<SVGPathElement>(null);
-  const pipCloudRef = useRef<HTMLDivElement>(null);
-  const captionRef = useRef<HTMLDivElement>(null);
+  const pipCloudMarkerRef = useRef<HTMLDivElement>(null);
+  const convergingParticlesRef = useRef<HTMLDivElement>(null);
 
-  const [pathLength, setPathLength] = useState(600);
-  const [scrollPercent, setScrollPercent] = useState(0);
+  const [pathLength, setPathLength] = useState(650);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     if (flightPathRef.current) {
@@ -47,113 +50,150 @@ export const CinematicScrollSequence: React.FC = () => {
         };
 
         if (!isNormalMotion) {
-          // Reduced motion: Show the nighttime scene statically without forced scroll-pinning
+          // Reduced motion: statically reveal the midnight town
           if (midnightSkyRef.current) gsap.set(midnightSkyRef.current, { opacity: 1 });
           if (rooftopsRef.current) gsap.set(rooftopsRef.current, { y: 0, opacity: 1 });
-          if (windowsRef.current) gsap.set(windowsRef.current, { opacity: 1 });
+          if (windowsGroupRef.current) gsap.set(windowsGroupRef.current.children, { opacity: 1 });
           if (flightPathRef.current) gsap.set(flightPathRef.current, { strokeDashoffset: 0 });
+          if (pipCloudMarkerRef.current) gsap.set(pipCloudMarkerRef.current, { opacity: 1 });
           return;
         }
 
-        // Master Scrubbed Timeline for Act II (Awakening) -> Act III (Dream World)
-        const tl = gsap.timeline({
+        // Master GSAP Timeline with ScrollTrigger
+        const masterTl = gsap.timeline({
           scrollTrigger: {
             trigger: pinSectionRef.current,
             start: 'top top',
-            end: isDesktop ? '+=180%' : '+=120%',
+            end: isDesktop ? '+=200%' : '+=140%',
             pin: true,
-            scrub: 1,
+            scrub: 0.8,
             anticipatePin: 1,
             onUpdate: (self) => {
-              setScrollPercent(Math.round(self.progress * 100));
+              setScrollProgress(Math.round(self.progress * 100));
             }
           }
         });
 
-        // 1. Lantern awakens & golden radial halo expands
-        tl.to(
+        // ACT II: BUILD-UP (0.0 to 1.2s)
+        // 1. Converging star particles gather toward the lantern
+        if (convergingParticlesRef.current) {
+          masterTl.fromTo(
+            convergingParticlesRef.current.children,
+            { scale: 1.4, opacity: 0.8, x: (i) => (i % 2 === 0 ? -40 : 40), y: (i) => (i < 2 ? -30 : 30) },
+            { scale: 0.2, opacity: 0, x: 0, y: 0, ease: 'power2.in', duration: 1.2 },
+            'buildUp'
+          );
+        }
+
+        // 2. Lantern core warms and pulses
+        masterTl.to(
           lanternGlowRef.current,
           {
-            scale: isDesktop ? 6 : 4,
-            opacity: 1,
-            ease: 'power2.inOut',
-            duration: 2
+            scale: 2.2,
+            opacity: 0.95,
+            ease: 'power2.in',
+            duration: 1.2
           },
-          0
+          'buildUp'
         );
 
-        // 2. Midnight indigo sky fades in over the warm nursery canvas
-        tl.to(
+        // ACT II: THE CLIMAX — GOLDEN FLARE BURST (1.2 to 2.2s)
+        masterTl.fromTo(
+          burstFlashRef.current,
+          { scale: 0.5, opacity: 0 },
+          { scale: 8, opacity: 0.75, ease: 'power3.out', duration: 0.8 },
+          'climax'
+        );
+        masterTl.to(
+          burstFlashRef.current,
+          { opacity: 0, duration: 0.6, ease: 'power2.in' },
+          'climax+=0.5'
+        );
+
+        // 3. Midnight sky dissolves in over warm cream
+        masterTl.to(
           midnightSkyRef.current,
-          {
-            opacity: 1,
-            ease: 'power2.inOut',
-            duration: 2.5
-          },
-          0.5
+          { opacity: 1, ease: 'power2.inOut', duration: 1.8 },
+          'climax-=0.2'
         );
 
-        // 3. Lantern gently scales and drifts upward into position
-        tl.to(
-          lanternRef.current,
-          {
-            scale: 0.65,
-            y: isDesktop ? -80 : -40,
-            opacity: 0.85,
-            ease: 'power1.out',
-            duration: 2
-          },
-          1
+        // 4. Multi-depth parallax stars appear
+        masterTl.fromTo(
+          starsDeepRef.current,
+          { opacity: 0, y: 30 },
+          { opacity: 0.6, y: -15, ease: 'power1.out', duration: 2 },
+          'climax+=0.2'
+        );
+        masterTl.fromTo(
+          starsForeRef.current,
+          { opacity: 0, y: 50 },
+          { opacity: 1, y: -30, ease: 'power1.out', duration: 2 },
+          'climax+=0.4'
         );
 
-        // 4. Rooftops and chimneys rise from the mist
-        tl.fromTo(
+        // 5. Lantern gently elevates into celestial guidance position
+        masterTl.to(
+          lanternHolderRef.current,
+          {
+            scale: 0.7,
+            y: isDesktop ? -90 : -50,
+            opacity: 0.9,
+            ease: 'power2.out',
+            duration: 1.8
+          },
+          'climax+=0.4'
+        );
+
+        // ACT III: ROOFTOPS & STAGGERED WINDOWS (2.4 to 4.0s)
+        // 6. Rooftops rise from the mist
+        masterTl.fromTo(
           rooftopsRef.current,
-          { y: 120, opacity: 0 },
-          { y: 0, opacity: 1, ease: 'power2.out', duration: 2 },
-          1.5
+          { y: 140, opacity: 0 },
+          { y: 0, opacity: 1, ease: 'power2.out', duration: 1.8 },
+          'townRise'
         );
 
-        // 5. Windows illuminate in the sleeping houses
-        if (windowsRef.current) {
-          tl.fromTo(
-            windowsRef.current,
-            { opacity: 0 },
-            { opacity: 1, ease: 'power1.in', duration: 1.5 },
-            2.2
+        // 7. Staggered window illumination across sleeping homes
+        if (windowsGroupRef.current) {
+          masterTl.fromTo(
+            windowsGroupRef.current.children,
+            { opacity: 0, scale: 0.7, transformOrigin: 'center center' },
+            { opacity: 1, scale: 1, stagger: 0.15, ease: 'back.out(1.5)', duration: 0.6 },
+            'townRise+=0.6'
           );
         }
 
-        // 6. SVG Flightpath draws itself across the rooftops
+        // ACT III: FLIGHTPATH & PIP CLOUD DISPATCH (3.6 to 5.5s)
+        // 8. Glowing SVG route draws through the town
         if (flightPathRef.current) {
           const len = flightPathRef.current.getTotalLength();
-          tl.fromTo(
+          masterTl.fromTo(
             flightPathRef.current,
             { strokeDashoffset: len },
-            { strokeDashoffset: 0, ease: 'power1.inOut', duration: 3 },
-            2.5
+            { strokeDashoffset: 0, ease: 'power1.inOut', duration: 2.2 },
+            'flight'
           );
         }
 
-        // 7. Pip on the Cloud glides across the rooftops
-        if (pipCloudRef.current) {
-          tl.fromTo(
-            pipCloudRef.current,
-            { x: -120, y: 30, opacity: 0, scale: 0.8 },
+        // 9. Pip Cloud avatar glides along the illuminated path
+        if (pipCloudMarkerRef.current) {
+          masterTl.fromTo(
+            pipCloudMarkerRef.current,
+            { x: -160, y: 40, opacity: 0, scale: 0.75 },
             {
-              x: isDesktop ? 220 : 120,
-              y: -20,
+              x: isDesktop ? 260 : 130,
+              y: -25,
               opacity: 1,
               scale: 1,
               ease: 'power1.inOut',
-              duration: 3
+              duration: 2.4
             },
-            2.8
+            'flight+=0.2'
           );
         }
 
         return () => {
-          tl.kill();
+          masterTl.kill();
         };
       }
     );
@@ -162,19 +202,19 @@ export const CinematicScrollSequence: React.FC = () => {
   }, [pathLength]);
 
   const getCinematicStageLabel = () => {
-    if (scrollPercent < 30) return 'ACT II: THE AWAKENING // LANTERN STIRS';
-    if (scrollPercent < 65) return 'ACT III: MIDNIGHT DESCENT // ROOFTOPS EMERGE';
+    if (scrollProgress < 25) return 'ACT II: THE AWAKENING // LANTERN STIRS';
+    if (scrollProgress < 60) return 'ACT III: MIDNIGHT DESCENT // ROOFTOPS EMERGE';
     return 'ACT III: DREAM DELIVERY // FLIGHTPATH ILLUMINATED';
   };
 
   const getCinematicStoryText = () => {
-    if (scrollPercent < 30) {
-      return 'As twilight deepens, Pip turns the brass key of the starlight lantern. A warm golden ember blossoms inside the glass.';
+    if (scrollProgress < 25) {
+      return 'In the quiet nursery, Pip turns the brass key. Golden starlight gathers toward the wick, ready to wake the night.';
     }
-    if (scrollPercent < 65) {
-      return 'Golden light spills across the nursery floor, opening a portal into the midnight sky. Silhouetted chimney stacks rise from the mist.';
+    if (scrollProgress < 60) {
+      return 'A luminous golden flare erupts into deep midnight indigo. Sleeping chimneys rise through starry mist.';
     }
-    return 'Pip takes to the clouds, following the golden starlight route to deliver peaceful dreams to every slumbering bedroom.';
+    return 'Pip takes flight along the golden constellation route, dropping sweet slumber down every chimney pot.';
   };
 
   return (
@@ -191,51 +231,83 @@ export const CinematicScrollSequence: React.FC = () => {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: 'var(--color-cream)'
+        backgroundColor: 'var(--color-cream)'
       }}
     >
-      {/* Dynamic Midnight Sky Overlay that fades in with scroll */}
+      {/* Background Deep Midnight Sky that dissolves in */}
       <div
         ref={midnightSkyRef}
         className="cinematic-midnight-sky"
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, #090b20 0%, #0d1238 60%, #060818 100%)',
+          background: 'linear-gradient(180deg, #050718 0%, #090b24 55%, #040510 100%)',
           opacity: 0,
           zIndex: 1,
           pointerEvents: 'none'
         }}
       >
-        {/* Shimmering Celestial Stars */}
-        <div className="cinematic-celestial-field" />
+        {/* Deep Distant Star Layer */}
+        <div ref={starsDeepRef} className="cinematic-celestial-field" style={{ opacity: 0 }} />
+
+        {/* Foreground Twinkling Constellations */}
+        <div
+          ref={starsForeRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              'radial-gradient(1.5px 1.5px at 120px 80px, #ffd88a, transparent), radial-gradient(2px 2px at 380px 140px, #ffffff, transparent), radial-gradient(1.5px 1.5px at 680px 90px, #c4b5fd, transparent), radial-gradient(2px 2px at 980px 120px, #ffd88a, transparent)',
+            backgroundRepeat: 'repeat',
+            backgroundSize: '900px 280px',
+            opacity: 0
+          }}
+        />
       </div>
 
-      {/* Massive Expanding Starlight Bloom from the Lantern */}
+      {/* Sudden Golden Flare Burst (Visual Climax at scroll ~25%) */}
       <div
-        ref={lanternGlowRef}
-        className="cinematic-lantern-bloom"
+        ref={burstFlashRef}
         style={{
           position: 'absolute',
-          top: '42%',
+          top: '45%',
+          left: '50%',
+          width: '140px',
+          height: '140px',
+          transform: 'translate(-50%, -50%) scale(0.5)',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, #ffd88a 0%, rgba(255, 216, 138, 0.8) 35%, transparent 70%)',
+          filter: 'blur(35px)',
+          opacity: 0,
+          zIndex: 3,
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* Expanding Lantern Core Aura */}
+      <div
+        ref={lanternGlowRef}
+        style={{
+          position: 'absolute',
+          top: '45%',
           left: '50%',
           width: '180px',
           height: '180px',
           transform: 'translate(-50%, -50%) scale(1)',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, #ffd88a 0%, rgba(255, 216, 138, 0.6) 40%, transparent 75%)',
-          filter: 'blur(35px)',
+          background: 'radial-gradient(circle, #ffd88a 0%, rgba(255, 216, 138, 0.5) 45%, transparent 75%)',
+          filter: 'blur(40px)',
           opacity: 0.35,
           zIndex: 2,
           pointerEvents: 'none'
         }}
       />
 
-      {/* Top Editorial Status Pill */}
+      {/* Top Editorial Status Pill (Positioned safely below sticky navbar) */}
       <div
         style={{
           position: 'absolute',
-          top: '2.5rem',
+          top: '4.8rem',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 10,
@@ -250,14 +322,14 @@ export const CinematicScrollSequence: React.FC = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.4rem 1.1rem',
+            padding: '0.4rem 1.15rem',
             borderRadius: '999px',
-            backgroundColor: 'rgba(9, 11, 32, 0.65)',
+            backgroundColor: 'rgba(5, 7, 24, 0.75)',
             border: '1px solid rgba(255, 216, 138, 0.35)',
             color: '#ffd88a',
             fontSize: '0.78rem',
-            backdropFilter: 'blur(10px)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
           }}
         >
           <Sparkles size={13} color="#ffd88a" />
@@ -265,7 +337,7 @@ export const CinematicScrollSequence: React.FC = () => {
         </div>
       </div>
 
-      {/* Central Interactive Artwork & Transformation Stage */}
+      {/* Central Lantern Stage with Converging Star Particles */}
       <div
         style={{
           position: 'relative',
@@ -277,26 +349,44 @@ export const CinematicScrollSequence: React.FC = () => {
           width: '100%',
           maxWidth: '1100px',
           padding: '0 1.5rem',
-          marginTop: '-2rem'
+          marginTop: '-1rem'
         }}
       >
-        {/* The Central Dream Lantern Artwork */}
+        {/* Converging Star Particles around Lantern */}
         <div
-          ref={lanternRef}
+          ref={convergingParticlesRef}
+          style={{
+            position: 'absolute',
+            width: '280px',
+            height: '280px',
+            pointerEvents: 'none',
+            zIndex: 3
+          }}
+        >
+          <span style={{ position: 'absolute', top: '15%', left: '15%', color: '#ffd88a', fontSize: '1rem' }}>✦</span>
+          <span style={{ position: 'absolute', top: '20%', right: '15%', color: '#ffd88a', fontSize: '0.85rem' }}>★</span>
+          <span style={{ position: 'absolute', bottom: '25%', left: '20%', color: '#c4b5fd', fontSize: '0.9rem' }}>✧</span>
+          <span style={{ position: 'absolute', bottom: '20%', right: '22%', color: '#ffd88a', fontSize: '1.1rem' }}>✦</span>
+        </div>
+
+        {/* The Lantern Artwork: Seamless feathered mask + gilded celestial portal rim */}
+        <div
+          ref={lanternHolderRef}
           className="cinematic-lantern-holder"
           style={{
             position: 'relative',
-            width: '260px',
-            height: '260px',
+            width: '270px',
+            maxWidth: '100%',
+            aspectRatio: '1024 / 914',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer'
           }}
           onClick={() => {
-            soundEngine.playMusicBoxNote(784, 1.4);
+            soundEngine.playMusicBoxNote(783.99, 1.4);
           }}
-          title="Pip's glowing starlight lantern"
+          title="Pip's glowing starlight lantern. Click to resonate."
         >
           <img
             src="/assets/pip_dream_lantern.png"
@@ -305,30 +395,33 @@ export const CinematicScrollSequence: React.FC = () => {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              filter: 'drop-shadow(0 0 35px rgba(255, 216, 138, 0.75))',
               position: 'relative',
-              zIndex: 3
+              zIndex: 3,
+              WebkitMaskImage:
+                'radial-gradient(ellipse 65% 70% at 50% 50%, black 45%, rgba(0,0,0,0.7) 65%, transparent 86%)',
+              maskImage:
+                'radial-gradient(ellipse 65% 70% at 50% 50%, black 45%, rgba(0,0,0,0.7) 65%, transparent 86%)',
+              filter: 'drop-shadow(0 0 30px rgba(255, 216, 138, 0.75))'
             }}
           />
         </div>
 
         {/* Dynamic Storytelling Text that updates with the scroll transformation */}
         <div
-          ref={captionRef}
           style={{
-            maxWidth: '640px',
+            maxWidth: '680px',
             textAlign: 'center',
-            marginTop: '1.5rem',
+            marginTop: '1.25rem',
             zIndex: 6
           }}
         >
           <p
             className="font-serif cinematic-narrative-text"
             style={{
-              fontSize: 'clamp(1.15rem, 2.2vw, 1.65rem)',
+              fontSize: 'clamp(1.15rem, 2.2vw, 1.6rem)',
               lineHeight: 1.45,
-              color: scrollPercent > 35 ? '#fff8f1' : 'var(--text-heading)',
-              textShadow: scrollPercent > 35 ? '0 2px 18px rgba(0,0,0,0.6)' : 'none',
+              color: scrollProgress > 30 ? '#fff8f1' : 'var(--text-heading)',
+              textShadow: scrollProgress > 30 ? '0 2px 20px rgba(0,0,0,0.7)' : 'none',
               transition: 'color 0.4s ease'
             }}
           >
@@ -357,30 +450,28 @@ export const CinematicScrollSequence: React.FC = () => {
           style={{ width: '100%', height: 'auto', display: 'block' }}
         >
           <defs>
-            {/* Window Glow Filter */}
-            <filter id="cinematic-window-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-
-            {/* Flightpath Golden Glow Filter */}
-            <filter id="route-path-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <filter id="cinematic-window-glow-fx" x="-30%" y="-30%" width="160%" height="160%">
               <feGaussianBlur stdDeviation="5" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
 
-            <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ffd88a" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="#ffd88a" stopOpacity="1" />
-              <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.9" />
+            <filter id="route-path-glow-fx" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+
+            <linearGradient id="flight-trail-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ffd88a" stopOpacity="0.3" />
+              <stop offset="45%" stopColor="#ffd88a" stopOpacity="1" />
+              <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0.95" />
             </linearGradient>
           </defs>
 
-          {/* Distant Rooftop Silhouettes */}
+          {/* Distant Midnight Rooftop Silhouettes */}
           <path
             d="M0 380 L0 260 L90 200 L180 260 L240 230 L310 270 L420 180 L520 250 L610 210 L700 270 L820 190 L920 250 L1020 220 L1110 260 L1200 210 L1200 380 Z"
-            fill="#050714"
-            opacity="0.85"
+            fill="#060818"
+            opacity="0.9"
           />
 
           {/* Foreground Victorian Rooftop Skyline */}
@@ -395,8 +486,8 @@ export const CinematicScrollSequence: React.FC = () => {
           <circle cx="495" cy="205" r="8" fill="#ffd88a" opacity="0.25" />
           <circle cx="498" cy="185" r="13" fill="#ffd88a" opacity="0.15" />
 
-          {/* Warm Illuminated Windows in Sleeping Houses */}
-          <g ref={windowsRef} filter="url(#cinematic-window-glow)" fill="#ffd88a">
+          {/* Staggered Warm Illuminated Windows */}
+          <g ref={windowsGroupRef} filter="url(#cinematic-window-glow-fx)" fill="#ffd88a">
             <rect x="80" y="275" width="14" height="20" rx="3" opacity="0.9" />
             <rect x="235" y="280" width="16" height="22" rx="3" opacity="0.95" />
             <rect x="390" y="265" width="14" height="18" rx="3" opacity="0.85" />
@@ -411,38 +502,46 @@ export const CinematicScrollSequence: React.FC = () => {
             ref={flightPathRef}
             id="cinematic-flight-curve"
             d="M 80 140 C 240 60, 420 220, 640 100 C 840 0, 1020 180, 1140 120"
-            stroke="url(#path-gradient)"
-            strokeWidth="3.5"
+            stroke="url(#flight-trail-grad)"
+            strokeWidth="3.8"
             strokeLinecap="round"
             strokeDasharray={pathLength}
             strokeDashoffset={pathLength}
-            filter="url(#route-path-glow)"
+            filter="url(#route-path-glow-fx)"
           />
 
-          {/* Route stops / Star Waypoints */}
-          <circle cx="80" cy="140" r="5" fill="#ffd88a" filter="url(#route-path-glow)" />
-          <circle cx="640" cy="100" r="6" fill="#ffd88a" filter="url(#route-path-glow)" />
-          <circle cx="1140" cy="120" r="5" fill="#c4b5fd" filter="url(#route-path-glow)" />
+          {/* Starlight Waypoints */}
+          <circle cx="80" cy="140" r="5" fill="#ffd88a" filter="url(#route-path-glow-fx)" />
+          <circle cx="640" cy="100" r="6" fill="#ffd88a" filter="url(#route-path-glow-fx)" />
+          <circle cx="1140" cy="120" r="5" fill="#c4b5fd" filter="url(#route-path-glow-fx)" />
         </svg>
 
-        {/* Pip Cloud Avatar Gliding along the Flightpath */}
+        {/* Pip Cloud Avatar Gliding along the Flightpath (Seamless feathered cloud mask) */}
         <div
-          ref={pipCloudRef}
+          ref={pipCloudMarkerRef}
           style={{
             position: 'absolute',
             bottom: '160px',
             left: '35%',
-            width: '90px',
-            height: '90px',
+            width: '95px',
+            height: '95px',
             pointerEvents: 'none',
             zIndex: 6,
-            filter: 'drop-shadow(0 0 16px rgba(255, 216, 138, 0.8))'
+            filter: 'drop-shadow(0 0 20px rgba(255, 216, 138, 0.9))'
           }}
         >
           <img
             src="/assets/pip_avatar_cloud.png"
             alt="Pip floating gently on a midnight bedtime cloud"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: '50%',
+              WebkitMaskImage:
+                'radial-gradient(circle at 50% 50%, black 35%, rgba(0,0,0,0.7) 50%, transparent 70%)',
+              maskImage:
+                'radial-gradient(circle at 50% 50%, black 35%, rgba(0,0,0,0.7) 50%, transparent 70%)'
+            }}
           />
         </div>
       </div>
@@ -457,14 +556,14 @@ export const CinematicScrollSequence: React.FC = () => {
           zIndex: 8,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          color: scrollPercent > 40 ? '#ffd88a' : 'var(--text-muted)',
+          gap: '0.45rem',
+          color: scrollProgress > 30 ? '#ffd88a' : 'var(--text-muted)',
           fontSize: '0.72rem',
           fontFamily: 'var(--font-mono)',
           transition: 'color 0.4s ease'
         }}
       >
-        <span>SCROLL PROGRESS: {scrollPercent}%</span>
+        <span>SCROLL PROGRESS: {scrollProgress}%</span>
         <span style={{ opacity: 0.5 }}>↓</span>
       </div>
     </div>

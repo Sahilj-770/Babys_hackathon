@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
         minHeight: '88vh',
         display: 'flex',
         alignItems: 'center',
-        padding: '2.5rem 1.5rem 3.5rem',
+        padding: '5rem 1.5rem 4rem',
         overflow: 'hidden'
       }}
     >
@@ -340,8 +340,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '430px',
-              aspectRatio: '1 / 1',
+              maxWidth: '360px',
+              aspectRatio: '682 / 1024',
               transform: isNodding
                 ? 'translateY(10px) rotate(2.5deg) scale(0.97)'
                 : `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
@@ -362,6 +362,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
+                WebkitMaskImage:
+                  'radial-gradient(ellipse 68% 74% at 50% 50%, black 48%, rgba(0,0,0,0.75) 66%, transparent 88%)',
+                maskImage:
+                  'radial-gradient(ellipse 68% 74% at 50% 50%, black 48%, rgba(0,0,0,0.75) 66%, transparent 88%)',
                 filter:
                   'drop-shadow(0 20px 40px rgba(92, 64, 51, 0.16)) drop-shadow(0 0 45px rgba(255, 216, 138, 0.6))',
                 transition: 'filter 0.4s ease'

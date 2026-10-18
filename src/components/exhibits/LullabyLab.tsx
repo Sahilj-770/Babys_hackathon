@@ -150,7 +150,7 @@ export const LullabyLab: React.FC = () => {
               position: 'relative',
               width: '100%',
               maxWidth: '310px',
-              aspectRatio: '1 / 1',
+              aspectRatio: '1024 / 924',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -166,6 +166,10 @@ export const LullabyLab: React.FC = () => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
+                WebkitMaskImage:
+                  'radial-gradient(ellipse 65% 68% at 50% 50%, black 45%, rgba(0,0,0,0.7) 64%, transparent 84%)',
+                maskImage:
+                  'radial-gradient(ellipse 65% 68% at 50% 50%, black 45%, rgba(0,0,0,0.7) 64%, transparent 84%)',
                 filter: acousticRipple
                   ? 'drop-shadow(0 0 28px rgba(255, 216, 138, 0.9)) drop-shadow(0 15px 25px rgba(92, 64, 51, 0.2))'
                   : 'drop-shadow(0 12px 24px rgba(92, 64, 51, 0.15))',

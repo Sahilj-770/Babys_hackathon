@@ -63,7 +63,7 @@ body.chaos-mode::after {
   background-size: 100% 3px, 6px 100%;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.85;
+  opacity: 0.08;
 }
 
 * {

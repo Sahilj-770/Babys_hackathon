@@ -374,10 +374,13 @@
    8. RESPONSIVE BREAKPOINTS
    ========================================================================== */
 @media (max-width: 960px) {
+  .hero-editorial-section {
+    padding-top: 3.5rem !important;
+  }
   .hero-container {
     grid-template-columns: 1fr !important;
     text-align: center;
-    gap: 2.5rem !important;
+    gap: 2rem !important;
   }
   .hero-text-col {
     align-items: center;
@@ -387,9 +390,11 @@
   }
   .hero-visual-col {
     order: -1; /* Place Pip prominently near top on tablets */
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
   }
   .pip-master-artwork {
-    max-width: 320px !important;
+    max-width: 270px !important;
   }
   .story-thread-line {
     display: none;
