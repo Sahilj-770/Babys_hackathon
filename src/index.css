@@ -1,0 +1,204 @@
+@import '@fontsource/fredoka/400.css';
+@import '@fontsource/fredoka/600.css';
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/space-mono/400.css';
+@import '@fontsource/space-mono/700.css';
+
+:root {
+  --color-cream: #fff8f1;
+  --color-berry: #a34063;
+  --color-cocoa: #5c4033;
+  --color-midnight: #090b20;
+  --color-violet: #777dff;
+  --color-gold: #ffd88a;
+
+  /* Theme tokens - Daydream default */
+  --bg-primary: #fff8f1;
+  --bg-surface: #fffdfa;
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-retro-panel: #f7ede2;
+  --border-color: rgba(92, 64, 51, 0.18);
+  --border-active: #a34063;
+  --text-main: #34221a;
+  --text-muted: #6b554b;
+  --text-heading: #26160f;
+  --accent-color: #a34063;
+  --glow-color: rgba(255, 216, 138, 0.45);
+  --shadow-soft: 0 10px 30px -8px rgba(92, 64, 51, 0.08), 0 4px 12px -2px rgba(92, 64, 51, 0.05);
+  --shadow-retro: 3px 3px 0px #5c4033;
+
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Fredoka', 'Quicksand', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+[data-theme='midnight'] {
+  --bg-primary: #090b20;
+  --bg-surface: #0e1233;
+  --bg-card: rgba(20, 24, 60, 0.85);
+  --bg-retro-panel: #13173d;
+  --border-color: rgba(119, 125, 255, 0.28);
+  --border-active: #777dff;
+  --text-main: #eaeaff;
+  --text-muted: #9ba0d8;
+  --text-heading: #ffffff;
+  --accent-color: #ffd88a;
+  --glow-color: rgba(119, 125, 255, 0.4);
+  --shadow-soft: 0 10px 35px -5px rgba(0, 0, 0, 0.6);
+  --shadow-retro: 3px 3px 0px #777dff;
+}
+
+/* Chaos Mode Overrides (Optional retro playfulness) */
+body.chaos-mode {
+  image-rendering: pixelated;
+  --font-sans: 'Space Mono', monospace;
+}
+
+body.chaos-mode::after {
+  content: " ";
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.85;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 3px;
+}
+
+/* Typography Helpers */
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-berry);
+  border-radius: 4px;
+}
+[data-theme='midnight'] ::-webkit-scrollbar-thumb {
+  background: var(--color-violet);
+}
+
+/* Retro OS Button Base */
+.retro-btn {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-active);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-active);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.retro-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-active);
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--border-active);
+}
+
+.retro-window {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  position: relative;
+}
+
+.retro-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1rem;
+  background: var(--bg-retro-panel);
+  border-bottom: 1px solid var(--border-color);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* Sparkle cursor particles */
+.sparkle-particle {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: 9998;
+  animation: sparkle-fade 0.75s forwards ease-out;
+}
+
+@keyframes sparkle-fade {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.1) translateY(18px);
+    opacity: 0;
+  }
+}
+
+/* Prefers-reduced-motion media query */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
