@@ -124,7 +124,13 @@ export function App() {
       <SparkleTrail />
 
       {/* Skippable Boot Screen */}
-      {!booted && <BootScreen onEnter={() => setBooted(true)} />}
+      {!booted && (
+        <BootScreen
+          onEnter={() => setBooted(true)}
+          isMuted={isMuted}
+          onToggleMute={toggleMute}
+        />
+      )}
 
       {/* Retro OS Floating Dream Navbar */}
       <OSNavbar

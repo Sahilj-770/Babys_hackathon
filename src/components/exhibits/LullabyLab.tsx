@@ -166,14 +166,10 @@ export const LullabyLab: React.FC = () => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                WebkitMaskImage:
-                  'radial-gradient(ellipse 65% 68% at 50% 50%, black 45%, rgba(0,0,0,0.7) 64%, transparent 84%)',
-                maskImage:
-                  'radial-gradient(ellipse 65% 68% at 50% 50%, black 45%, rgba(0,0,0,0.7) 64%, transparent 84%)',
                 filter: acousticRipple
-                  ? 'drop-shadow(0 0 28px rgba(255, 216, 138, 0.9)) drop-shadow(0 15px 25px rgba(92, 64, 51, 0.2))'
-                  : 'drop-shadow(0 12px 24px rgba(92, 64, 51, 0.15))',
-                transform: activeNote ? 'scale(1.02)' : 'scale(1)',
+                  ? 'drop-shadow(0 0 35px rgba(255, 216, 138, 0.95)) drop-shadow(0 15px 25px rgba(92, 64, 51, 0.2))'
+                  : 'drop-shadow(0 15px 30px rgba(92, 64, 51, 0.15)) drop-shadow(0 0 20px rgba(255, 216, 138, 0.35))',
+                transform: activeNote ? 'scale(1.03)' : 'scale(1)',
                 transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
               }}
             />

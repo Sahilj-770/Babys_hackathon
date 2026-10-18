@@ -185,10 +185,6 @@ export const NightlightCollection: React.FC = () => {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              WebkitMaskImage:
-                'radial-gradient(ellipse 65% 70% at 50% 50%, black 45%, rgba(0,0,0,0.7) 65%, transparent 86%)',
-              maskImage:
-                'radial-gradient(ellipse 65% 70% at 50% 50%, black 45%, rgba(0,0,0,0.7) 65%, transparent 86%)',
               filter: selected.ambientFilter,
               position: 'relative',
               zIndex: 1,

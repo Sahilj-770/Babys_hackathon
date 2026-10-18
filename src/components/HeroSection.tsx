@@ -340,7 +340,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '360px',
+              maxWidth: '380px',
               aspectRatio: '682 / 1024',
               transform: isNodding
                 ? 'translateY(10px) rotate(2.5deg) scale(0.97)'
@@ -354,6 +354,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
             title="Click or tap Pip to say hello"
             aria-label="Pip the Skull Baby, official centerpiece portrait. Tap to greet Pip."
           >
+            {/* Soft atmospheric base cloud layer */}
+            <div
+              className="pip-cloud-drift-base"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                bottom: '-12px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '92%',
+                height: '48px',
+                borderRadius: '999px',
+                background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 248, 241, 0.3) 50%, transparent 80%)',
+                filter: 'blur(10px)',
+                zIndex: 1,
+                pointerEvents: 'none'
+              }}
+            />
+
             <img
               src="/assets/pip_portrait.png"
               alt="Pip the Skull Baby, wearing a starry bedtime nightcap with a pink ribbon and a gentle smile"
@@ -362,12 +381,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                WebkitMaskImage:
-                  'radial-gradient(ellipse 68% 74% at 50% 50%, black 48%, rgba(0,0,0,0.75) 66%, transparent 88%)',
-                maskImage:
-                  'radial-gradient(ellipse 68% 74% at 50% 50%, black 48%, rgba(0,0,0,0.75) 66%, transparent 88%)',
+                position: 'relative',
+                zIndex: 2,
                 filter:
-                  'drop-shadow(0 20px 40px rgba(92, 64, 51, 0.16)) drop-shadow(0 0 45px rgba(255, 216, 138, 0.6))',
+                  'drop-shadow(0 20px 35px rgba(92, 64, 51, 0.16)) drop-shadow(0 0 50px rgba(255, 216, 138, 0.55))',
                 transition: 'filter 0.4s ease'
               }}
             />

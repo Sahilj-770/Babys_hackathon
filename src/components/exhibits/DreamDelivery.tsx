@@ -298,14 +298,9 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
               src="/assets/pip_avatar_cloud.png"
               alt="Pip on the bedtime dream delivery cloud"
               style={{
-                width: '64px',
-                height: '64px',
-                objectFit: 'contain',
-                borderRadius: '50%',
-                WebkitMaskImage:
-                  'radial-gradient(circle at 50% 50%, black 35%, rgba(0,0,0,0.7) 50%, transparent 70%)',
-                maskImage:
-                  'radial-gradient(circle at 50% 50%, black 35%, rgba(0,0,0,0.7) 50%, transparent 70%)'
+                width: '68px',
+                height: '68px',
+                objectFit: 'contain'
               }}
             />
           </div>

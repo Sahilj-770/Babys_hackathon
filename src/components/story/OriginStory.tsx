@@ -256,11 +256,7 @@ export const OriginStory: React.FC = () => {
                       width: '100%',
                       height: '100%',
                       objectFit: 'contain',
-                      WebkitMaskImage:
-                        'radial-gradient(ellipse 65% 68% at 50% 50%, black 42%, rgba(0,0,0,0.7) 62%, transparent 84%)',
-                      maskImage:
-                        'radial-gradient(ellipse 65% 68% at 50% 50%, black 42%, rgba(0,0,0,0.7) 62%, transparent 84%)',
-                      filter: `drop-shadow(0 10px 25px ${scene.color}50)`,
+                      filter: `drop-shadow(0 15px 30px ${scene.color}60) drop-shadow(0 0 40px ${scene.color}35)`,
                       position: 'relative',
                       zIndex: 1
                     }}
