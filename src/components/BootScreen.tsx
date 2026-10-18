@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Sparkles, FastForward, Volume2, VolumeX, Compass } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import gsap from 'gsap';
+import { Sparkles, FastForward, Volume2, VolumeX, Compass, Stars } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 
 interface BootScreenProps {
@@ -13,59 +14,142 @@ export const BootScreen: React.FC<BootScreenProps> = ({
   isMuted = false,
   onToggleMute
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const astrolabeRef = useRef<SVGSVGElement>(null);
+  const dreamPathRef = useRef<SVGPathElement>(null);
+  const lanternHaloRef = useRef<HTMLDivElement>(null);
+  const flareRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const pipRef = useRef<HTMLDivElement>(null);
+  const enterBtnRef = useRef<HTMLButtonElement>(null);
+
   const isReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Cinematic awakening phases:
-  // 0: Void & Stars, 1: Constellation Alignment, 2: Lantern Ignition, 3: Golden Light Sweep & Ready
-  const [phase, setPhase] = useState<number>(isReducedMotion ? 3 : 0);
+  const [diagnosticMsg, setDiagnosticMsg] = useState(() =>
+    isReducedMotion
+      ? '✦ MIDNIGHT NURSERY ONLINE // READY TO AWAKEN'
+      : 'ALIGNING MIDNIGHT NURSERY CONSTELLATIONS...'
+  );
   const [isExiting, setIsExiting] = useState(false);
 
+  // Intentional enter handler
   const handleEnter = useCallback(() => {
     if (isExiting) return;
     setIsExiting(true);
+
     if (!isMuted) {
       soundEngine.playCelebrationChime();
     }
-    setTimeout(() => {
+
+    if (flareRef.current && containerRef.current && !isReducedMotion) {
+      gsap.to(flareRef.current, {
+        opacity: 1,
+        scale: 2.5,
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          gsap.to(containerRef.current, {
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power2.out',
+            onComplete: onEnter
+          });
+        }
+      });
+    } else {
       onEnter();
-    }, 600);
-  }, [isExiting, isMuted, onEnter]);
+    }
+  }, [isExiting, isMuted, isReducedMotion, onEnter]);
 
-  // Phase choreography
+  // GSAP Choreography Timeline
   useEffect(() => {
-    if (isReducedMotion) return;
+    if (isReducedMotion) {
+      return;
+    }
 
-    // Phase 1: Constellation lines align
-    const t1 = setTimeout(() => {
-      setPhase(1);
-    }, 700);
-
-    // Phase 2: Lantern ignites with chime
-    const t2 = setTimeout(() => {
-      setPhase(2);
-      if (!isMuted) {
-        soundEngine.playMusicBoxNote(523.25, 1.5);
+    const ctx = gsap.context(() => {
+      // 1. Slow continuous rotation of the celestial astrolabe mechanism
+      if (astrolabeRef.current) {
+        gsap.to(astrolabeRef.current, {
+          rotation: 360,
+          duration: 48,
+          repeat: -1,
+          ease: 'none',
+          transformOrigin: '50% 50%'
+        });
       }
-    }, 1800);
 
-    // Phase 3: Golden light sweep & ready
-    const t3 = setTimeout(() => {
-      setPhase(3);
-      if (!isMuted) {
-        soundEngine.playMusicBoxNote(659.25, 1.2);
+      const tl = gsap.timeline();
+
+      // Initial state
+      gsap.set([titleRef.current, pipRef.current, enterBtnRef.current], {
+        opacity: 0,
+        y: 20
+      });
+
+      if (dreamPathRef.current) {
+        const length = dreamPathRef.current.getTotalLength() || 800;
+        gsap.set(dreamPathRef.current, {
+          strokeDasharray: length,
+          strokeDashoffset: length
+        });
       }
-    }, 3100);
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
+      // Step 2 (0.4s): Stars and title appear
+      tl.to(titleRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        ease: 'power2.out',
+        onStart: () => {
+          setDiagnosticMsg('CALIBRATING 432 Hz LULLABY RESONATORS...');
+          if (!isMuted) soundEngine.playMusicBoxNote(440, 1.2);
+        }
+      })
+      // Step 3 (1.2s): Golden particle dream path draws across screen
+      .to(dreamPathRef.current, {
+        strokeDashoffset: 0,
+        duration: 1.4,
+        ease: 'power1.inOut'
+      }, '-=0.2')
+      // Step 4 (1.8s): Pip and lantern awaken
+      .to(pipRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.9,
+        ease: 'back.out(1.4)',
+        onStart: () => {
+          setDiagnosticMsg('STARLIGHT LANTERN IGNITED // FREQ 432.0 Hz');
+          if (!isMuted) soundEngine.playMusicBoxNote(523.25, 1.4);
+        }
+      }, '-=0.6')
+      // Step 5 (2.5s): Lantern halo expands
+      .to(lanternHaloRef.current, {
+        scale: 1.4,
+        opacity: 0.95,
+        duration: 1.0,
+        ease: 'power2.out'
+      }, '-=0.5')
+      // Step 6 (3.2s): Readiness achieved
+      .to(enterBtnRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          setDiagnosticMsg('✦ MIDNIGHT NURSERY ONLINE // READY TO ENTER');
+          if (!isMuted) soundEngine.playMusicBoxNote(659.25, 1.0);
+        }
+      }, '-=0.2');
+
+    }, containerRef);
+
+    return () => ctx.revert();
   }, [isReducedMotion, isMuted]);
 
-  // Keyboard shortcut listener: Enter / Space to enter, Esc to skip
+  // Keyboard shortcut listener: Enter / Space to enter, Esc to skip immediately
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -80,25 +164,55 @@ export const BootScreen: React.FC<BootScreenProps> = ({
 
   return (
     <div
+      ref={containerRef}
       role="dialog"
       aria-modal="true"
       aria-label="Midnight Nursery DreamOS 99 Startup Sequence"
-      className={`theatrical-boot-screen ${isExiting ? 'boot-exit-sweep' : ''}`}
+      className="theatrical-boot-screen"
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: '#050718',
+        backgroundColor: '#040616',
         color: '#fff8f1',
         zIndex: 10000,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: 'clamp(1.2rem, 3.5vw, 2.5rem)',
-        overflow: 'hidden',
-        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s ease'
+        overflow: 'hidden'
       }}
     >
-      {/* 1. Deep Cosmic Star Field with twinkling stars */}
+      {/* 1. Deep Midnight Cosmic Atmospheric Glows */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '-10%',
+          left: '20%',
+          width: '60vw',
+          height: '60vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(119, 125, 255, 0.16) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          pointerEvents: 'none'
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          bottom: '-15%',
+          right: '15%',
+          width: '50vw',
+          height: '50vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(163, 64, 99, 0.18) 0%, transparent 70%)',
+          filter: 'blur(70px)',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* 2. Twinkling Star Field Background */}
       <div
         className="boot-star-field"
         aria-hidden="true"
@@ -113,121 +227,101 @@ export const BootScreen: React.FC<BootScreenProps> = ({
             'radial-gradient(2px 2px at 540px 100px, #c4b5fd, transparent), ' +
             'radial-gradient(1.5px 1.5px at 700px 240px, #ffd88a, transparent), ' +
             'radial-gradient(2px 2px at 860px 70px, #ffffff, transparent), ' +
-            'radial-gradient(1px 1px at 1020px 160px, #ffd88a, transparent), ' +
-            'radial-gradient(2px 2px at 1180px 90px, #c4b5fd, transparent), ' +
-            'radial-gradient(1.5px 1.5px at 320px 420px, #ffffff, transparent), ' +
-            'radial-gradient(2px 2px at 780px 460px, #ffd88a, transparent), ' +
-            'radial-gradient(1.5px 1.5px at 980px 520px, #ffffff, transparent)',
+            'radial-gradient(1.5px 1.5px at 1020px 160px, #ffd88a, transparent), ' +
+            'radial-gradient(2px 2px at 1180px 90px, #c4b5fd, transparent)',
           backgroundSize: '1200px 600px',
-          opacity: 0.85
+          opacity: 0.8
         }}
       />
 
-      {/* 2. Constellation Vector Geometry (Connecting star nodes) */}
+      {/* 3. Celestial Astrolabe Rotating Mechanism */}
       <svg
+        ref={astrolabeRef}
         aria-hidden="true"
-        viewBox="0 0 1000 600"
+        viewBox="0 0 600 600"
         style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 'min(90vw, 1000px)',
-          height: 'min(90vh, 600px)',
+          width: 'min(85vw, 680px)',
+          height: 'min(85vw, 680px)',
           pointerEvents: 'none',
-          zIndex: 1,
-          opacity: phase >= 1 ? 0.75 : 0.15,
-          transition: 'opacity 1.2s ease-in-out'
+          opacity: 0.22,
+          zIndex: 1
+        }}
+      >
+        <circle cx="300" cy="300" r="280" fill="none" stroke="#ffd88a" strokeWidth="1" strokeDasharray="3 6" />
+        <circle cx="300" cy="300" r="220" fill="none" stroke="#777dff" strokeWidth="1.2" strokeDasharray="8 8" />
+        <circle cx="300" cy="300" r="160" fill="none" stroke="#ffd88a" strokeWidth="1" />
+        <line x1="300" y1="20" x2="300" y2="580" stroke="#ffd88a" strokeWidth="0.8" opacity="0.6" />
+        <line x1="20" y1="300" x2="580" y2="300" stroke="#ffd88a" strokeWidth="0.8" opacity="0.6" />
+        <line x1="102" y1="102" x2="498" y2="498" stroke="#777dff" strokeWidth="0.8" opacity="0.4" />
+        <line x1="102" y1="498" x2="498" y2="102" stroke="#777dff" strokeWidth="0.8" opacity="0.4" />
+        {/* Constellation anchor stars */}
+        <circle cx="300" cy="80" r="4" fill="#ffd88a" />
+        <circle cx="520" cy="300" r="4" fill="#ffd88a" />
+        <circle cx="300" cy="520" r="4" fill="#ffd88a" />
+        <circle cx="80" cy="300" r="4" fill="#ffd88a" />
+      </svg>
+
+      {/* 4. Golden Luminous Dream Path SVG */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1000 300"
+        preserveAspectRatio="none"
+        style={{
+          position: 'absolute',
+          top: '55%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          height: '240px',
+          pointerEvents: 'none',
+          zIndex: 2,
+          opacity: 0.85
         }}
       >
         <defs>
-          <linearGradient id="boot-constellation-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffd88a" stopOpacity="0.8" />
-            <stop offset="50%" stopColor="#c4b5fd" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#ffd88a" stopOpacity="0.8" />
+          <linearGradient id="bootDreamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ffd88a" stopOpacity="0.2" />
+            <stop offset="50%" stopColor="#ffd88a" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#ffb3ba" stopOpacity="0.3" />
           </linearGradient>
-          <filter id="boot-star-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+          <filter id="bootGlow">
+            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
             <feMerge>
-              <feMergeNode in="blur" />
+              <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
-
-        {/* Animated Constellation Geometry Lines */}
-        <g stroke="url(#boot-constellation-grad)" strokeWidth="1.5" strokeDasharray="6 4" fill="none">
-          <path
-            d="M 220 200 L 360 140 L 500 220 L 640 140 L 780 200 L 660 380 L 500 440 L 340 380 Z"
-            style={{
-              strokeDasharray: 2000,
-              strokeDashoffset: phase >= 1 ? 0 : 2000,
-              transition: isReducedMotion ? 'none' : 'stroke-dashoffset 2.4s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          />
-          <path
-            d="M 500 220 L 500 440"
-            style={{
-              strokeDasharray: 500,
-              strokeDashoffset: phase >= 1 ? 0 : 500,
-              transition: isReducedMotion ? 'none' : 'stroke-dashoffset 1.8s ease 0.4s'
-            }}
-          />
-          <path
-            d="M 360 140 L 640 140"
-            style={{
-              strokeDasharray: 500,
-              strokeDashoffset: phase >= 1 ? 0 : 500,
-              transition: isReducedMotion ? 'none' : 'stroke-dashoffset 1.6s ease 0.6s'
-            }}
-          />
-        </g>
-
-        {/* Major Constellation Star Nodes */}
-        {[
-          { cx: 220, cy: 200, r: 4 },
-          { cx: 360, cy: 140, r: 5 },
-          { cx: 500, cy: 220, r: 6 },
-          { cx: 640, cy: 140, r: 5 },
-          { cx: 780, cy: 200, r: 4 },
-          { cx: 660, cy: 380, r: 5 },
-          { cx: 500, cy: 440, r: 6 },
-          { cx: 340, cy: 380, r: 5 }
-        ].map((star, idx) => (
-          <circle
-            key={idx}
-            cx={star.cx}
-            cy={star.cy}
-            r={star.r}
-            fill="#ffd88a"
-            filter="url(#boot-star-glow)"
-            style={{
-              opacity: phase >= 1 ? 1 : 0.3,
-              transformOrigin: `${star.cx}px ${star.cy}px`,
-              transform: phase >= 1 ? 'scale(1)' : 'scale(0.5)',
-              transition: `all 0.8s ease ${idx * 0.1}s`
-            }}
-          />
-        ))}
+        <path
+          ref={dreamPathRef}
+          d="M 50 160 Q 250 80 500 150 T 950 140"
+          fill="none"
+          stroke="url(#bootDreamGrad)"
+          strokeWidth="3.5"
+          filter="url(#bootGlow)"
+          strokeLinecap="round"
+        />
       </svg>
 
-      {/* 3. Golden Light Sweep across the canvas */}
+      {/* 5. Golden Flare Screen Sweep (For smooth exit transition) */}
       <div
-        className="boot-golden-sweep"
+        ref={flareRef}
         aria-hidden="true"
         style={{
           position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(115deg, transparent 20%, rgba(255, 216, 138, 0.22) 48%, rgba(255, 255, 255, 0.35) 50%, rgba(255, 216, 138, 0.22) 52%, transparent 80%)',
-          transform: phase >= 2 ? 'translateX(120%)' : 'translateX(-120%)',
-          transition: isReducedMotion ? 'none' : 'transform 1.8s cubic-bezier(0.25, 1, 0.5, 1)',
+          inset: '-20%',
+          background: 'radial-gradient(circle at center, #ffd88a 0%, #fff8f1 45%, rgba(255, 248, 241, 0) 75%)',
+          opacity: 0,
           pointerEvents: 'none',
-          zIndex: 2
+          zIndex: 9999
         }}
       />
 
-      {/* Top Bar: Telemetry, Mute Toggle & Visible Skip */}
+      {/* TOP BAR: Telemetry & Controls */}
       <div
         style={{
           display: 'flex',
@@ -261,7 +355,6 @@ export const BootScreen: React.FC<BootScreenProps> = ({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          {/* Mute / Unmute Toggle */}
           {onToggleMute && (
             <button
               onClick={onToggleMute}
@@ -280,7 +373,6 @@ export const BootScreen: React.FC<BootScreenProps> = ({
             </button>
           )}
 
-          {/* Visible Skip Button */}
           <button
             onClick={handleEnter}
             className="retro-btn"
@@ -300,7 +392,7 @@ export const BootScreen: React.FC<BootScreenProps> = ({
         </div>
       </div>
 
-      {/* Center Stage: Igniting Lantern, Light Bloom, & Editorial Awakening */}
+      {/* CENTER STAGE: Pip, Lantern, & Expressive Midnight Nursery Headline */}
       <div
         style={{
           display: 'flex',
@@ -314,60 +406,52 @@ export const BootScreen: React.FC<BootScreenProps> = ({
           padding: '1rem'
         }}
       >
-        {/* Central Igniting Lantern Stage */}
+        {/* Pip Centerpiece & Waking Starlight Lantern */}
         <div
+          ref={pipRef}
           style={{
             position: 'relative',
             width: '160px',
             height: '160px',
-            marginBottom: '1rem',
+            marginBottom: '0.75rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}
         >
-          {/* Expanding Igniting Lantern Radial Bloom */}
+          {/* Radial Light Bloom */}
           <div
+            ref={lanternHaloRef}
+            aria-hidden="true"
             style={{
               position: 'absolute',
-              inset: '-25px',
+              inset: '-20px',
               borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(255, 216, 138, 0.85) 0%, rgba(255, 180, 100, 0.4) 40%, transparent 75%)',
-              filter: 'blur(30px)',
-              transform: phase >= 2 ? 'scale(1.4)' : 'scale(0.3)',
-              opacity: phase >= 2 ? 0.95 : 0.15,
-              transition: isReducedMotion ? 'none' : 'all 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              filter: 'blur(28px)',
+              transform: 'scale(0.8)',
+              opacity: 0.5,
               pointerEvents: 'none'
             }}
           />
 
-          {/* Lantern Core Illustration */}
+          {/* Official Lantern Illustration */}
           <img
             src="/assets/pip_dream_lantern.png"
             alt="Pip's starlight lantern igniting in the cosmos"
             style={{
-              width: '120px',
-              height: '120px',
+              width: '125px',
+              height: '125px',
               objectFit: 'contain',
               position: 'relative',
               zIndex: 3,
-              filter: phase >= 2
-                ? 'drop-shadow(0 0 25px rgba(255, 216, 138, 0.95)) drop-shadow(0 0 45px rgba(255, 216, 138, 0.5))'
-                : 'brightness(0.5) drop-shadow(0 0 10px rgba(255, 216, 138, 0.3))',
-              transform: phase >= 2 ? 'scale(1.05)' : 'scale(0.92)',
-              transition: isReducedMotion ? 'none' : 'all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              filter: 'drop-shadow(0 0 25px rgba(255, 216, 138, 0.9)) drop-shadow(0 0 45px rgba(255, 216, 138, 0.45))'
             }}
           />
         </div>
 
-        {/* Grand Editorial Headline */}
-        <div
-          style={{
-            opacity: phase >= 1 ? 1 : 0.4,
-            transform: phase >= 1 ? 'translateY(0)' : 'translateY(12px)',
-            transition: 'all 0.8s ease'
-          }}
-        >
+        {/* Expressive Editorial Typography */}
+        <div ref={titleRef}>
           <div
             className="font-mono"
             style={{
@@ -414,7 +498,7 @@ export const BootScreen: React.FC<BootScreenProps> = ({
           </div>
         </div>
 
-        {/* Phase Status Readout */}
+        {/* Diagnostic Telemetry Feed */}
         <div
           className="font-mono"
           style={{
@@ -424,14 +508,11 @@ export const BootScreen: React.FC<BootScreenProps> = ({
             minHeight: '1.4rem'
           }}
         >
-          {phase === 0 && 'SCANNING NIGHT SKY FOR RESTLESS DREAMERS...'}
-          {phase === 1 && 'ALIGNING STARLIGHT CONSTELLATION MESH...'}
-          {phase === 2 && 'IGNITING PIP\'S STARLIGHT LANTERN CORE (432 Hz)...'}
-          {phase >= 3 && '✦ MIDNIGHT NURSERY ONLINE // READY TO AWAKEN'}
+          {diagnosticMsg}
         </div>
       </div>
 
-      {/* Bottom Bar: Action Trigger & Tactile Hint */}
+      {/* BOTTOM BAR: Clear ENTER THE NURSERY Button & Tactile Hint */}
       <div
         style={{
           display: 'flex',
@@ -443,26 +524,25 @@ export const BootScreen: React.FC<BootScreenProps> = ({
         }}
       >
         <button
+          ref={enterBtnRef}
           onClick={handleEnter}
           className="retro-btn boot-enter-btn"
           style={{
             backgroundColor: '#ffd88a',
             color: '#26160f',
             borderColor: '#ffd88a',
-            fontSize: '1.02rem',
+            fontSize: '1.05rem',
             fontWeight: 700,
-            padding: '0.9rem 2.4rem',
+            padding: '0.95rem 2.6rem',
             boxShadow: '0 0 35px rgba(255, 216, 138, 0.75), 0 4px 15px rgba(0,0,0,0.4)',
             cursor: 'pointer',
-            transform: phase >= 3 ? 'scale(1)' : 'scale(0.95)',
-            opacity: phase >= 2 ? 1 : 0.65,
             transition: 'all 0.3s ease'
           }}
-          aria-label="Awaken the Nursery and explore Pip's dream world"
+          aria-label="Enter Midnight Nursery and explore Pip's dream world"
         >
           <Compass size={18} color="#26160f" />
-          <span>AWAKEN THE NURSERY</span>
-          <Sparkles size={16} color="#26160f" />
+          <span>ENTER THE NURSERY</span>
+          <Stars size={18} color="#26160f" />
         </button>
 
         <span
@@ -479,3 +559,5 @@ export const BootScreen: React.FC<BootScreenProps> = ({
     </div>
   );
 };
+
+export default BootScreen;

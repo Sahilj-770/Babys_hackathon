@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Volume2, VolumeX, Sun, Moon, Radio, Sparkles } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 import type { ThemeMode } from '../types';
@@ -11,6 +12,7 @@ interface OSNavbarProps {
   chaosMode: boolean;
   onToggleChaos: () => void;
   onOpenSecret: () => void;
+  isArcadeUnlocked?: boolean;
 }
 
 export const OSNavbar: React.FC<OSNavbarProps> = ({
@@ -20,10 +22,12 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
   onToggleMute,
   chaosMode,
   onToggleChaos,
-  onOpenSecret
+  onOpenSecret,
+  isArcadeUnlocked = false
 }) => {
   const [secretClicks, setSecretClicks] = useState(0);
   const [secretHint, setSecretHint] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSecretStarClick = () => {
     const next = secretClicks + 1;
@@ -37,15 +41,18 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
       setSecretHint(null);
       soundEngine.playCelebrationChime();
       onOpenSecret();
+      // Also navigate to secret arcade
+      navigate('/secret-arcade');
     }
   };
+
   return (
     <header className="dream-header">
       <div className="dream-header-container">
         {/* Brand & Daemon State */}
         <div className="dream-brand-group">
-          <a
-            href="#top"
+          <Link
+            to="/"
             className="dream-brand-link"
             onClick={() => soundEngine.playClick(500)}
           >
@@ -55,7 +62,7 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
             <span className="font-serif dream-brand-title">
               Midnight Nursery
             </span>
-          </a>
+          </Link>
 
           {/* Live system state tag */}
           <div className="dream-daemon-tag font-mono">
@@ -64,20 +71,47 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
           </div>
         </div>
 
-        {/* Desktop Navigation Links */}
+        {/* Multi-Page Navigation Links */}
         <nav aria-label="Main Navigation" className="dream-nav">
-          <a href="#about" onClick={() => soundEngine.playClick(440)}>
-            About Pip
-          </a>
-          <a href="#exhibits" onClick={() => soundEngine.playClick(480)}>
-            Dream Labs
-          </a>
-          <a href="#story" onClick={() => soundEngine.playClick(520)}>
-            Origin Story
-          </a>
-          <a href="#credits" onClick={() => soundEngine.playClick(560)}>
-            Credits
-          </a>
+          <NavLink
+            to="/"
+            end
+            onClick={() => soundEngine.playClick(440)}
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Nursery
+          </NavLink>
+          <NavLink
+            to="/dream-forge"
+            onClick={() => soundEngine.playClick(480)}
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Dream Forge
+          </NavLink>
+          <NavLink
+            to="/atlas"
+            onClick={() => soundEngine.playClick(520)}
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Midnight Atlas
+          </NavLink>
+          <NavLink
+            to="/archive"
+            onClick={() => soundEngine.playClick(560)}
+            className={({ isActive }) => (isActive ? 'active' : '')}
+          >
+            Bedtime Archive
+          </NavLink>
+          {isArcadeUnlocked && (
+            <NavLink
+              to="/secret-arcade"
+              onClick={() => soundEngine.playClick(600)}
+              className={({ isActive }) => (isActive ? 'active secret-nav-link' : 'secret-nav-link')}
+              style={{ color: '#ffd88a' }}
+            >
+              ★ Arcade
+            </NavLink>
+          )}
         </nav>
 
         {/* Action Controls Strip */}

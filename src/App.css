@@ -105,6 +105,20 @@
   background-color: var(--bg-retro-panel);
 }
 
+.dream-nav a.active {
+  color: var(--color-berry);
+  background-color: var(--bg-retro-panel);
+  border: 1px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  font-weight: 700;
+}
+
+.world-portal-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-berry) !important;
+  box-shadow: 0 16px 35px -10px rgba(163, 64, 99, 0.25) !important;
+}
+
 .dream-controls-strip {
   display: flex;
   align-items: center;
