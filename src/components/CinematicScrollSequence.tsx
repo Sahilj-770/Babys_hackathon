@@ -33,10 +33,9 @@ export const CinematicScrollSequence: React.FC = () => {
   const textDuskRef = useRef<HTMLParagraphElement>(null);
   const textFlightRef = useRef<HTMLParagraphElement>(null);
 
-  const [pathLength, setPathLength] = useState(650);
   const [isLanternVision, setIsLanternVision] = useState(false);
 
-  // Feature 2: Lantern Vision Pointer Tracking (Direct CSS variables, zero React re-render thrashing)
+  // Lantern Vision Pointer Tracking (Direct CSS variables, zero React re-render thrashing)
   useEffect(() => {
     if (!isLanternVision || !pinSectionRef.current) return;
 
@@ -78,16 +77,6 @@ export const CinematicScrollSequence: React.FC = () => {
   };
 
   useEffect(() => {
-    if (flightPathRef.current) {
-      const len = flightPathRef.current.getTotalLength();
-      setPathLength(len);
-    }
-    if (stagePillTextRef.current) {
-      stagePillTextRef.current.textContent = 'ACT II: THE AWAKENING // LANTERN STIRS';
-    }
-  }, []);
-
-  useEffect(() => {
     if (!pinSectionRef.current) return;
 
     const mm = gsap.matchMedia();
@@ -106,8 +95,19 @@ export const CinematicScrollSequence: React.FC = () => {
           isNormalMotion: boolean;
         };
 
+        if (flightPathRef.current) {
+          const len = flightPathRef.current.getTotalLength() || 680;
+          flightPathRef.current.style.strokeDasharray = `${len}`;
+          flightPathRef.current.style.strokeDashoffset = `${len}`;
+        }
+
+        if (stagePillTextRef.current) {
+          stagePillTextRef.current.textContent = 'ACT I: THE AWAKENING // LANTERN STIRS';
+        }
+
         if (!isNormalMotion) {
           // Reduced motion: statically reveal the midnight town without pinned animation
+          document.documentElement.style.setProperty('--scroll-night-progress', '1');
           if (midnightSkyRef.current) gsap.set(midnightSkyRef.current, { opacity: 1 });
           if (rooftopsRef.current) gsap.set(rooftopsRef.current, { y: 0, opacity: 1 });
           if (windowsGroupRef.current) gsap.set(windowsGroupRef.current.children, { opacity: 1 });
@@ -128,10 +128,30 @@ export const CinematicScrollSequence: React.FC = () => {
           scrollTrigger: {
             trigger: pinSectionRef.current,
             start: 'top top',
-            end: isDesktop ? '+=250%' : '+=180%',
+            end: isDesktop ? '+=260%' : '+=180%',
             pin: true,
-            scrub: 0.9,
-            anticipatePin: 1
+            scrub: 0.8,
+            anticipatePin: 1,
+            fastScrollEnd: true,
+            preventOverlaps: true,
+            onUpdate: (self) => {
+              // Direct CSS variable updates on documentElement: zero React re-render thrashing
+              document.documentElement.style.setProperty(
+                '--scroll-night-progress',
+                self.progress.toFixed(3)
+              );
+
+              // Reversible Stage Pill Text
+              if (stagePillTextRef.current) {
+                if (self.progress < 0.35) {
+                  stagePillTextRef.current.textContent = 'ACT I: THE AWAKENING // LANTERN STIRS';
+                } else if (self.progress < 0.70) {
+                  stagePillTextRef.current.textContent = 'ACT II: TWILIGHT SETTLES // STARS KINDLE';
+                } else {
+                  stagePillTextRef.current.textContent = 'ACT III: DREAM DELIVERY // FLIGHTPATH ILLUMINATED';
+                }
+              }
+            }
           }
         });
 
@@ -295,27 +315,30 @@ export const CinematicScrollSequence: React.FC = () => {
           4.6
         );
 
-        // Stage pill updates cleanly at key points
-        masterTl.call(() => {
-          if (stagePillTextRef.current) stagePillTextRef.current.textContent = 'ACT II: THE AWAKENING // LANTERN STIRS';
-        }, [], 0.5);
-
-        masterTl.call(() => {
-          if (stagePillTextRef.current) stagePillTextRef.current.textContent = 'ACT II: TWILIGHT SETTLES // STARS KINDLE';
-        }, [], 2.4);
-
-        masterTl.call(() => {
-          if (stagePillTextRef.current) stagePillTextRef.current.textContent = 'ACT III: DREAM DELIVERY // FLIGHTPATH ILLUMINATED';
-        }, [], 4.6);
-
         return () => {
+          document.documentElement.style.removeProperty('--scroll-night-progress');
           masterTl.kill();
         };
       }
     );
 
-    return () => mm.revert();
-  }, [pathLength]);
+    const handleRefresh = () => {
+      ScrollTrigger.refresh();
+    };
+
+    window.addEventListener('load', handleRefresh);
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(handleRefresh);
+    }
+    const refreshTimer = setTimeout(handleRefresh, 200);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      window.removeEventListener('load', handleRefresh);
+      document.documentElement.style.removeProperty('--scroll-night-progress');
+      mm.revert();
+    };
+  }, []);
 
   return (
     <div
@@ -715,8 +738,6 @@ export const CinematicScrollSequence: React.FC = () => {
             stroke="url(#flight-trail-grad)"
             strokeWidth="3.8"
             strokeLinecap="round"
-            strokeDasharray={pathLength}
-            strokeDashoffset={pathLength}
             filter="url(#route-path-glow-fx)"
           />
 

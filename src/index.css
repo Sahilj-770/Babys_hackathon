@@ -13,20 +13,54 @@
   --color-violet: #777dff;
   --color-gold: #ffd88a;
 
-  /* Theme tokens - Daydream default */
-  --bg-primary: #fff8f1;
-  --bg-surface: #fffdfa;
-  --bg-card: rgba(255, 255, 255, 0.88);
-  --bg-retro-panel: #f7ede2;
-  --border-color: rgba(92, 64, 51, 0.18);
-  --border-active: #a34063;
-  --text-main: #34221a;
-  --text-muted: #6b554b;
-  --text-heading: #26160f;
-  --accent-color: #a34063;
-  --glow-color: rgba(255, 216, 138, 0.45);
+  /* Base Daydream tokens */
+  --day-bg-primary: #fff8f1;
+  --day-bg-surface: #fffdfa;
+  --day-bg-card: rgba(255, 255, 255, 0.92);
+  --day-bg-retro-panel: #f7ede2;
+  --day-border-color: rgba(92, 64, 51, 0.18);
+  --day-border-active: #a34063;
+  --day-text-main: #34221a;
+  --day-text-muted: #6b554b;
+  --day-text-heading: #26160f;
+  --day-accent-color: #a34063;
+  --day-glow-color: rgba(255, 216, 138, 0.45);
+  --day-shadow-retro: 3px 3px 0px #5c4033;
+  --day-navbar-bg: rgba(255, 248, 241, 0.88);
+
+  /* Base Midnight tokens */
+  --night-bg-primary: #090b20;
+  --night-bg-surface: #0e1233;
+  --night-bg-card: rgba(20, 24, 60, 0.85);
+  --night-bg-retro-panel: #13173d;
+  --night-border-color: rgba(119, 125, 255, 0.28);
+  --night-border-active: #777dff;
+  --night-text-main: #eaeaff;
+  --night-text-muted: #9ba0d8;
+  --night-text-heading: #ffffff;
+  --night-accent-color: #ffd88a;
+  --night-glow-color: rgba(119, 125, 255, 0.4);
+  --night-shadow-retro: 3px 3px 0px #777dff;
+  --night-navbar-bg: rgba(9, 11, 32, 0.92);
+
+  /* Dynamic scroll progress (0 in daydream, scrubs to 1 during cinematic sequence) */
+  --scroll-night-progress: 0;
+
+  /* Active tokens - interpolates seamlessly with scroll progress in Daydream mode */
+  --bg-primary: color-mix(in srgb, var(--night-bg-primary) calc(var(--scroll-night-progress, 0) * 100%), var(--day-bg-primary));
+  --bg-surface: color-mix(in srgb, var(--night-bg-surface) calc(var(--scroll-night-progress, 0) * 100%), var(--day-bg-surface));
+  --bg-card: color-mix(in srgb, var(--night-bg-card) calc(var(--scroll-night-progress, 0) * 100%), var(--day-bg-card));
+  --bg-retro-panel: color-mix(in srgb, var(--night-bg-retro-panel) calc(var(--scroll-night-progress, 0) * 100%), var(--day-bg-retro-panel));
+  --border-color: color-mix(in srgb, var(--night-border-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-border-color));
+  --border-active: color-mix(in srgb, var(--night-border-active) calc(var(--scroll-night-progress, 0) * 100%), var(--day-border-active));
+  --text-main: color-mix(in srgb, var(--night-text-main) calc(var(--scroll-night-progress, 0) * 100%), var(--day-text-main));
+  --text-muted: color-mix(in srgb, var(--night-text-muted) calc(var(--scroll-night-progress, 0) * 100%), var(--day-text-muted));
+  --text-heading: color-mix(in srgb, var(--night-text-heading) calc(var(--scroll-night-progress, 0) * 100%), var(--day-text-heading));
+  --accent-color: color-mix(in srgb, var(--night-accent-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-accent-color));
+  --glow-color: color-mix(in srgb, var(--night-glow-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-glow-color));
+  --shadow-retro: color-mix(in srgb, var(--night-shadow-retro) calc(var(--scroll-night-progress, 0) * 100%), var(--day-shadow-retro));
+  --navbar-bg: color-mix(in srgb, var(--night-navbar-bg) calc(var(--scroll-night-progress, 0) * 100%), var(--day-navbar-bg));
   --shadow-soft: 0 10px 30px -8px rgba(92, 64, 51, 0.08), 0 4px 12px -2px rgba(92, 64, 51, 0.05);
-  --shadow-retro: 3px 3px 0px #5c4033;
 
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Fredoka', 'Quicksand', system-ui, sans-serif;
@@ -34,19 +68,20 @@
 }
 
 [data-theme='midnight'] {
-  --bg-primary: #090b20;
-  --bg-surface: #0e1233;
-  --bg-card: rgba(20, 24, 60, 0.85);
-  --bg-retro-panel: #13173d;
-  --border-color: rgba(119, 125, 255, 0.28);
-  --border-active: #777dff;
-  --text-main: #eaeaff;
-  --text-muted: #9ba0d8;
-  --text-heading: #ffffff;
-  --accent-color: #ffd88a;
-  --glow-color: rgba(119, 125, 255, 0.4);
+  --bg-primary: var(--night-bg-primary);
+  --bg-surface: var(--night-bg-surface);
+  --bg-card: var(--night-bg-card);
+  --bg-retro-panel: var(--night-bg-retro-panel);
+  --border-color: var(--night-border-color);
+  --border-active: var(--night-border-active);
+  --text-main: var(--night-text-main);
+  --text-muted: var(--night-text-muted);
+  --text-heading: var(--night-text-heading);
+  --accent-color: var(--night-accent-color);
+  --glow-color: var(--night-glow-color);
   --shadow-soft: 0 10px 35px -5px rgba(0, 0, 0, 0.6);
-  --shadow-retro: 3px 3px 0px #777dff;
+  --shadow-retro: var(--night-shadow-retro);
+  --navbar-bg: var(--night-navbar-bg);
 }
 
 /* Chaos Mode Overrides (Optional retro playfulness) */

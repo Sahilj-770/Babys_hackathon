@@ -1,4 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
 import { Sparkles, ArrowDown, BedDouble, Compass, Wand2, Star } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 
@@ -16,6 +17,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Subtle entrance reveal on mount
+  useEffect(() => {
+    if (containerRef.current) {
+      gsap.fromTo(
+        containerRef.current,
+        { opacity: 0.85, y: 16 },
+        { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
+      );
+    }
+  }, []);
 
   // Fine-pointer mouse movement handler for organic parallax
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -110,6 +122,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
       </div>
 
       <div
+        ref={containerRef}
         className="hero-container"
         style={{
           maxWidth: '1240px',

@@ -91,20 +91,31 @@ export const BedtimeArchivePage: React.FC = () => {
 
   const activeChapter = CHAPTERS[activeChapterIdx];
 
-  // Chapter change handler with GSAP transition
+  // Chapter change handler with physical page turn sound & 3D GSAP transition
   const goToChapter = useCallback(
     (index: number) => {
       if (index === activeChapterIdx) return;
       const direction = index > activeChapterIdx ? 1 : -1;
       setActiveChapterIdx(index);
-      soundEngine.playClick(440 + index * 80);
+      soundEngine.playPageTurn();
       soundEngine.playMusicBoxNote(CHAPTERS[index].noteFreq, 1.2);
 
       if (bookCardRef.current) {
         gsap.fromTo(
           bookCardRef.current,
-          { opacity: 0, x: direction * 40 },
-          { opacity: 1, x: 0, duration: 0.5, ease: 'power2.out' }
+          {
+            opacity: 0,
+            rotateY: direction * 10,
+            transformPerspective: 1200,
+            scale: 0.98
+          },
+          {
+            opacity: 1,
+            rotateY: 0,
+            scale: 1,
+            duration: 0.55,
+            ease: 'power2.out'
+          }
         );
       }
     },
@@ -281,270 +292,354 @@ export const BedtimeArchivePage: React.FC = () => {
         </header>
 
         {/* ====================================================================
-            Illustrated Storybook Tome
+            Illustrated Physical Storybook Tome
             ==================================================================== */}
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          style={{
-            position: 'relative',
-            marginBottom: '4.5rem'
-          }}
-        >
-          {/* Chapter Selector Ribbon */}
+        <div style={{ marginBottom: '4.5rem' }}>
+          {/* Chapter Constellation Journey Tracker */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1rem',
-              flexWrap: 'wrap',
-              gap: '0.75rem'
+              justifyContent: 'center',
+              gap: '0.85rem',
+              marginBottom: '1.5rem',
+              flexWrap: 'wrap'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {CHAPTERS.map((ch, idx) => {
-                const isSelected = activeChapterIdx === idx;
-                return (
+            {CHAPTERS.map((ch, idx) => {
+              const isSelected = activeChapterIdx === idx;
+              const isPassed = activeChapterIdx >= idx;
+              return (
+                <button
+                  key={ch.id}
+                  onClick={() => goToChapter(idx)}
+                  className="retro-btn"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    padding: '0.45rem 1.15rem',
+                    fontSize: '0.82rem',
+                    borderRadius: '999px',
+                    backgroundColor: isSelected ? ch.color : 'var(--bg-retro-panel)',
+                    color: isSelected ? '#26160f' : 'var(--text-main)',
+                    borderColor: isSelected ? ch.color : 'var(--border-color)',
+                    fontWeight: isSelected ? 700 : 500,
+                    boxShadow: isSelected ? `0 0 16px ${ch.color}55` : 'none',
+                    transition: 'all 0.25s ease'
+                  }}
+                  title={`Switch to ${ch.act}: ${ch.title}`}
+                >
+                  <span style={{ color: isPassed ? '#ffd88a' : 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    {isPassed ? '★' : '☆'}
+                  </span>
+                  <span>{ch.act}: {ch.title.split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            className="storybook-wrapper"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Paper pages stack depth beneath */}
+            <div className="storybook-pages-stack" aria-hidden="true" />
+
+            {/* Silk Bookmark Ribbon dangling from top */}
+            <div
+              className="storybook-ribbon"
+              style={{ backgroundColor: activeChapter.color }}
+              title={`Active Bookmark: ${activeChapter.act}`}
+              aria-hidden="true"
+            />
+
+            {/* Physical Storybook Tome Card */}
+            <article
+              ref={bookCardRef}
+              className="storybook-tome"
+              style={{
+                borderColor: `${activeChapter.color}66`,
+                boxShadow: `0 24px 60px -15px ${activeChapter.color}35`,
+                padding: 'clamp(2rem, 4.5vw, 3.5rem)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '3rem',
+                alignItems: 'center',
+                minHeight: '480px'
+              }}
+            >
+              {/* Center Book Spine Gutter / Crease */}
+              <div className="storybook-gutter" aria-hidden="true" />
+
+              {/* Decorative Antique Gilded Book Corners */}
+              <svg
+                aria-hidden="true"
+                style={{ position: 'absolute', top: 12, left: 12, width: 28, height: 28, pointerEvents: 'none', opacity: 0.7 }}
+                viewBox="0 0 28 28"
+              >
+                <path d="M 0 20 L 0 0 L 20 0 M 6 0 L 6 6 L 0 6" fill="none" stroke={activeChapter.color} strokeWidth="1.8" />
+              </svg>
+              <svg
+                aria-hidden="true"
+                style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, pointerEvents: 'none', opacity: 0.7 }}
+                viewBox="0 0 28 28"
+              >
+                <path d="M 28 20 L 28 0 L 8 0 M 22 0 L 22 6 L 28 6" fill="none" stroke={activeChapter.color} strokeWidth="1.8" />
+              </svg>
+
+              {/* Chapter Environmental Atmospheric Effects */}
+              {activeChapter.id === 1 && (
+                /* Chapter 1: Floating Starlight Dust Motes & Candle Ember Glow */
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    pointerEvents: 'none',
+                    backgroundImage:
+                      'radial-gradient(1.5px 1.5px at 15% 25%, #ffd88a, transparent), ' +
+                      'radial-gradient(2px 2px at 45% 65%, #ffffff, transparent), ' +
+                      'radial-gradient(1.5px 1.5px at 75% 35%, #ffd88a, transparent), ' +
+                      'radial-gradient(2px 2px at 85% 75%, #fde68a, transparent)',
+                    opacity: 0.75
+                  }}
+                />
+              )}
+
+              {activeChapter.id === 2 && (
+                /* Chapter 2: Rotating Clockwork Gears & Lullaby Waves */
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    pointerEvents: 'none',
+                    opacity: 0.18,
+                    overflow: 'hidden'
+                  }}
+                >
+                  <svg viewBox="0 0 400 400" style={{ position: 'absolute', right: '-40px', bottom: '-40px', width: '220px', height: '220px' }}>
+                    <circle cx="200" cy="200" r="140" fill="none" stroke="#ffb3ba" strokeWidth="4" strokeDasharray="12 8" />
+                    <circle cx="200" cy="200" r="90" fill="none" stroke="#ffb3ba" strokeWidth="2.5" />
+                    <line x1="200" y1="50" x2="200" y2="350" stroke="#ffb3ba" strokeWidth="2" />
+                    <line x1="50" y1="200" x2="350" y2="200" stroke="#ffb3ba" strokeWidth="2" />
+                  </svg>
+                </div>
+              )}
+
+              {activeChapter.id === 3 && (
+                /* Chapter 3: Nighttime Rooftop Silhouette & Cloud Mist */
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '90px',
+                    pointerEvents: 'none',
+                    opacity: 0.22
+                  }}
+                >
+                  <svg viewBox="0 0 600 90" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+                    <path d="M 0 90 L 0 50 L 50 20 L 100 50 L 160 30 L 220 70 L 300 25 L 380 60 L 460 20 L 540 50 L 600 35 L 600 90 Z" fill="#c4b5fd" />
+                  </svg>
+                </div>
+              )}
+
+              {/* Left Page: Unboxed Official Character Illustration */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  zIndex: 2
+                }}
+              >
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '300px',
+                    aspectRatio: '1 / 1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  {/* Luminous Glow Filter */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: '85%',
+                      height: '85%',
+                      borderRadius: '50%',
+                      backgroundColor: activeChapter.color,
+                      filter: 'blur(50px)',
+                      opacity: 0.45,
+                      pointerEvents: 'none'
+                    }}
+                  />
+
+                  <img
+                    src={activeChapter.assetImg}
+                    alt={activeChapter.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                      position: 'relative',
+                      zIndex: 2,
+                      filter: `drop-shadow(0 18px 32px ${activeChapter.color}55)`
+                    }}
+                  />
+                </div>
+
+                {/* Harmonic Audio Strike Button */}
+                <button
+                  onClick={() => soundEngine.playMusicBoxNote(activeChapter.noteFreq, 1.4)}
+                  className="retro-btn"
+                  style={{
+                    marginTop: '1.25rem',
+                    padding: '0.45rem 1.15rem',
+                    fontSize: '0.78rem',
+                    backgroundColor: 'var(--bg-retro-panel)',
+                    borderColor: `${activeChapter.color}80`,
+                    color: 'var(--text-main)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}
+                  title={`Resonate chapter frequency: ${activeChapter.noteName}`}
+                >
+                  <Volume2 size={13} color={activeChapter.color} />
+                  <span className="font-mono">RESONATE CHIME ({activeChapter.noteName})</span>
+                </button>
+              </div>
+
+              {/* Right Page: Illustrated Storybook Narrative */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.25rem',
+                  position: 'relative',
+                  zIndex: 2
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: '0.76rem',
+                      color: activeChapter.color,
+                      letterSpacing: '0.08em',
+                      fontWeight: 700
+                    }}
+                  >
+                    {activeChapter.act} • {activeChapter.subtitle.toUpperCase()}
+                  </span>
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: '0.7rem',
+                      color: 'var(--text-muted)',
+                      backgroundColor: 'var(--bg-retro-panel)',
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-color)'
+                    }}
+                  >
+                    {activeChapter.wordCount} WORDS [CONCISE CANON]
+                  </span>
+                </div>
+
+                <h2
+                  className="font-serif"
+                  style={{
+                    fontSize: 'clamp(1.9rem, 3.4vw, 2.6rem)',
+                    color: 'var(--text-heading)',
+                    lineHeight: 1.15,
+                    margin: 0
+                  }}
+                >
+                  {activeChapter.title}
+                </h2>
+
+                <p
+                  style={{
+                    fontSize: '1.1rem',
+                    lineHeight: 1.75,
+                    color: 'var(--text-main)',
+                    margin: 0
+                  }}
+                >
+                  "{activeChapter.story}"
+                </p>
+
+                {/* Page Turn Controls */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingTop: '1.25rem',
+                    borderTop: '1px solid var(--border-color)',
+                    marginTop: '0.5rem'
+                  }}
+                >
                   <button
-                    key={ch.id}
-                    onClick={() => goToChapter(idx)}
+                    onClick={() => goToChapter(activeChapterIdx - 1)}
+                    disabled={activeChapterIdx === 0}
                     className="retro-btn"
                     style={{
                       padding: '0.45rem 1rem',
-                      fontSize: '0.8rem',
-                      backgroundColor: isSelected ? ch.color : 'var(--bg-retro-panel)',
-                      color: isSelected ? '#26160f' : 'var(--text-main)',
-                      borderColor: isSelected ? ch.color : 'var(--border-color)',
-                      fontWeight: isSelected ? 700 : 500
+                      fontSize: '0.82rem',
+                      opacity: activeChapterIdx === 0 ? 0.4 : 1,
+                      cursor: activeChapterIdx === 0 ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    <span>{ch.act}</span>
+                    <ArrowLeft size={14} />
+                    <span>Previous Act</span>
                   </button>
-                );
-              })}
-            </div>
 
-            <div className="font-mono" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Use [←] and [→] keys or swipe to turn pages
-            </div>
+                  <span className="font-mono" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    ACT {activeChapterIdx + 1} OF {CHAPTERS.length}
+                  </span>
+
+                  <button
+                    onClick={() => goToChapter(activeChapterIdx + 1)}
+                    disabled={activeChapterIdx === CHAPTERS.length - 1}
+                    className="retro-btn"
+                    style={{
+                      padding: '0.45rem 1rem',
+                      fontSize: '0.82rem',
+                      opacity: activeChapterIdx === CHAPTERS.length - 1 ? 0.4 : 1,
+                      cursor: activeChapterIdx === CHAPTERS.length - 1 ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <span>Next Act</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
-
-          {/* Storybook Tome Card */}
-          <article
-            ref={bookCardRef}
-            style={{
-              position: 'relative',
-              borderRadius: '24px',
-              border: `2px solid ${activeChapter.color}55`,
-              background: `var(--bg-surface)`,
-              boxShadow: `0 20px 50px -15px ${activeChapter.color}35`,
-              overflow: 'hidden',
-              padding: 'clamp(1.75rem, 4vw, 3rem)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '2.5rem',
-              alignItems: 'center'
-            }}
-          >
-            {/* Background Aura */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: activeChapter.bgGlow,
-                pointerEvents: 'none'
-              }}
-            />
-
-            {/* Left Page: Unboxed Official Character Illustration */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 1
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  maxWidth: '280px',
-                  aspectRatio: '1 / 1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {/* Luminous Glow Filter */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    width: '85%',
-                    height: '85%',
-                    borderRadius: '50%',
-                    backgroundColor: activeChapter.color,
-                    filter: 'blur(45px)',
-                    opacity: 0.45,
-                    pointerEvents: 'none'
-                  }}
-                />
-
-                <img
-                  src={activeChapter.assetImg}
-                  alt={activeChapter.title}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    position: 'relative',
-                    zIndex: 2,
-                    filter: `drop-shadow(0 15px 30px ${activeChapter.color}55)`
-                  }}
-                />
-              </div>
-
-              {/* Harmonic Audio Strike Button */}
-              <button
-                onClick={() => soundEngine.playMusicBoxNote(activeChapter.noteFreq, 1.4)}
-                className="retro-btn"
-                style={{
-                  marginTop: '1.25rem',
-                  padding: '0.45rem 1rem',
-                  fontSize: '0.78rem',
-                  backgroundColor: 'var(--bg-retro-panel)',
-                  borderColor: `${activeChapter.color}60`,
-                  color: 'var(--text-main)'
-                }}
-                title={`Strike resonance chime: ${activeChapter.noteName}`}
-              >
-                <Volume2 size={13} color={activeChapter.color} />
-                <span className="font-mono">PLAY CHIME ({activeChapter.noteName})</span>
-              </button>
-            </div>
-
-            {/* Right Page: Illustrated Narrative Text */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                position: 'relative',
-                zIndex: 1
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: '0.75rem',
-                    color: activeChapter.color,
-                    letterSpacing: '0.08em',
-                    fontWeight: 700
-                  }}
-                >
-                  {activeChapter.act} • {activeChapter.subtitle.toUpperCase()}
-                </span>
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--text-muted)',
-                    backgroundColor: 'var(--bg-retro-panel)',
-                    padding: '0.15rem 0.5rem',
-                    borderRadius: '4px',
-                    border: '1px solid var(--border-color)'
-                  }}
-                >
-                  {activeChapter.wordCount} WORDS [STRICT &lt; 150]
-                </span>
-              </div>
-
-              <h2
-                className="font-serif"
-                style={{
-                  fontSize: 'clamp(1.8rem, 3.2vw, 2.5rem)',
-                  color: 'var(--text-heading)',
-                  lineHeight: 1.15,
-                  margin: 0
-                }}
-              >
-                {activeChapter.title}
-              </h2>
-
-              <p
-                style={{
-                  fontSize: '1.05rem',
-                  lineHeight: 1.7,
-                  color: 'var(--text-main)',
-                  margin: 0
-                }}
-              >
-                "{activeChapter.story}"
-              </p>
-
-              {/* Page Turn Controls */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '1rem',
-                  borderTop: '1px solid var(--border-color)',
-                  marginTop: '0.5rem'
-                }}
-              >
-                <button
-                  onClick={() => goToChapter(activeChapterIdx - 1)}
-                  disabled={activeChapterIdx === 0}
-                  className="retro-btn"
-                  style={{
-                    padding: '0.45rem 0.95rem',
-                    fontSize: '0.8rem',
-                    opacity: activeChapterIdx === 0 ? 0.4 : 1,
-                    cursor: activeChapterIdx === 0 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <ArrowLeft size={14} />
-                  <span>Previous</span>
-                </button>
-
-                <span className="font-mono" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  PAGE {activeChapterIdx + 1} OF {CHAPTERS.length}
-                </span>
-
-                <button
-                  onClick={() => goToChapter(activeChapterIdx + 1)}
-                  disabled={activeChapterIdx === CHAPTERS.length - 1}
-                  className="retro-btn"
-                  style={{
-                    padding: '0.45rem 0.95rem',
-                    fontSize: '0.8rem',
-                    opacity: activeChapterIdx === CHAPTERS.length - 1 ? 0.4 : 1,
-                    cursor: activeChapterIdx === CHAPTERS.length - 1 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <span>Next Chapter</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
-            </div>
-          </article>
         </div>
 
         {/* ====================================================================
-            Shelf of Locally Saved Dream Tickets
+            Bedside Shelf of Locally Preserved Dream Tickets
             ==================================================================== */}
         <section
           style={{
-            padding: '2.5rem 0',
-            borderTop: '1px dashed var(--border-color)'
+            padding: '2.5rem 0'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div
                 className="font-mono"
@@ -559,9 +654,9 @@ export const BedtimeArchivePage: React.FC = () => {
                 }}
               >
                 <BookmarkCheck size={14} color="var(--color-gold)" />
-                <span>LOCAL BEDSIDE STORAGE // LOCALSTORAGE SHELF</span>
+                <span>NURSERY BEDSIDE SHELF // TICKET VAULT</span>
               </div>
-              <h3 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-heading)', margin: 0 }}>
+              <h3 className="font-serif" style={{ fontSize: '1.9rem', color: 'var(--text-heading)', margin: 0 }}>
                 Saved Dream Tickets Shelf
               </h3>
             </div>
@@ -575,19 +670,22 @@ export const BedtimeArchivePage: React.FC = () => {
                 color: '#ffffff',
                 borderColor: 'var(--color-berry)',
                 fontSize: '0.85rem',
-                padding: '0.55rem 1.15rem'
+                padding: '0.55rem 1.25rem'
               }}
             >
               <Sparkles size={14} />
-              <span>Forge New Ticket</span>
+              <span>Weave New Dream</span>
             </Link>
           </div>
+
+          {/* Wooden Bedside Shelf Plank */}
+          <div className="bedside-shelf-plank" aria-hidden="true" />
 
           {/* Ticket Cards Grid or Empty State */}
           {savedTickets.length === 0 ? (
             <div
               style={{
-                padding: '3rem 2rem',
+                padding: '3.5rem 2rem',
                 borderRadius: '20px',
                 border: '1.5px dashed var(--border-color)',
                 backgroundColor: 'var(--bg-retro-panel)',
@@ -598,12 +696,12 @@ export const BedtimeArchivePage: React.FC = () => {
                 gap: '1rem'
               }}
             >
-              <Sparkles size={36} color="var(--color-gold)" />
-              <h4 className="font-serif" style={{ fontSize: '1.4rem', color: 'var(--text-heading)', margin: 0 }}>
+              <Sparkles size={38} color="var(--color-gold)" />
+              <h4 className="font-serif" style={{ fontSize: '1.45rem', color: 'var(--text-heading)', margin: 0 }}>
                 Your Bedside Shelf is Empty
               </h4>
-              <p style={{ color: 'var(--text-muted)', maxWidth: '480px', margin: 0, fontSize: '0.95rem', lineHeight: 1.55 }}>
-                You haven't preserved any bedtime tickets yet. Visit the Dream Forge to blend a world, companion, and feeling, then click "Preserve to Bedside Shelf".
+              <p style={{ color: 'var(--text-muted)', maxWidth: '500px', margin: 0, fontSize: '0.96rem', lineHeight: 1.6 }}>
+                You haven't pinned any bedtime tickets yet tonight. Visit the Dream Forge to blend a celestial world, companion, and feeling, then preserve your ticket here.
               </p>
               <Link
                 to="/dream-forge"
@@ -613,7 +711,8 @@ export const BedtimeArchivePage: React.FC = () => {
                   color: '#26160f',
                   borderColor: 'var(--color-gold)',
                   fontWeight: 700,
-                  marginTop: '0.5rem'
+                  marginTop: '0.5rem',
+                  padding: '0.6rem 1.35rem'
                 }}
               >
                 <span>Enter the Dream Forge →</span>
@@ -624,36 +723,36 @@ export const BedtimeArchivePage: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: '1.5rem'
+                gap: '1.75rem'
               }}
             >
               {savedTickets.map((ticket) => (
                 <div
                   key={ticket.id}
+                  className="bedtime-ticket-card"
                   style={{
-                    backgroundColor: 'var(--bg-surface)',
-                    borderRadius: '18px',
-                    border: '1.5px solid var(--border-color)',
-                    padding: '1.5rem',
-                    boxShadow: 'var(--shadow-soft)',
+                    padding: '1.6rem',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1rem',
-                    position: 'relative'
+                    gap: '1rem'
                   }}
                 >
-                  {/* Top Bar with Palette Swatches */}
+                  {/* Decorative Ticket Scallop Notches */}
+                  <div className="ticket-scallop-left" aria-hidden="true" />
+                  <div className="ticket-scallop-right" aria-hidden="true" />
+
+                  {/* Top Bar with Palette Swatches & ID */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span className="font-mono" style={{ fontSize: '0.72rem', color: 'var(--color-berry)', fontWeight: 700 }}>
-                      {ticket.id}
+                      TICKET #{ticket.id}
                     </span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
+                    <div style={{ display: 'flex', gap: '5px' }}>
                       {ticket.colors.map((c, ci) => (
                         <div
                           key={ci}
                           style={{
-                            width: '12px',
-                            height: '12px',
+                            width: '13px',
+                            height: '13px',
                             borderRadius: '50%',
                             backgroundColor: c,
                             border: '1px solid rgba(0,0,0,0.1)'
@@ -664,30 +763,38 @@ export const BedtimeArchivePage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--text-heading)', margin: '0 0 0.25rem 0' }}>
+                    <h4 className="font-serif" style={{ fontSize: '1.3rem', color: 'var(--text-heading)', margin: '0 0 0.4rem 0' }}>
                       {ticket.title}
                     </h4>
-                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
-                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
                         {ticket.world}
                       </span>
-                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
+                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
                         {ticket.companion}
                       </span>
-                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.45rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
+                      <span className="font-mono" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem', borderRadius: '4px', backgroundColor: 'var(--bg-retro-panel)', border: '1px solid var(--border-color)' }}>
                         {ticket.feeling}
                       </span>
                     </div>
                   </div>
 
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>
+                  <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0, fontStyle: 'italic' }}>
                     "{ticket.story}"
                   </p>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', marginTop: 'auto' }}>
-                    <span className="font-mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                      {ticket.timestamp} • {ticket.frequency}
-                    </span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.85rem', borderTop: '1px dashed var(--border-color)', marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <button
+                        onClick={() => soundEngine.playMusicBoxNote(523.25, 1.2)}
+                        className="retro-btn"
+                        style={{ padding: '0.3rem 0.55rem', fontSize: '0.7rem' }}
+                        title="Resonate ticket frequency"
+                      >
+                        <Volume2 size={12} color="var(--color-gold)" />
+                        <span className="font-mono">{ticket.frequency}</span>
+                      </button>
+                    </div>
 
                     <div style={{ display: 'flex', gap: '0.45rem' }}>
                       <button

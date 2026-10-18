@@ -166,6 +166,33 @@ class SoundEngine {
       // Audio autoplay handled silently
     }
   }
+
+  // Gentle tactile book page turn sound: soft paper rustle sweep
+  public playPageTurn() {
+    if (this.isMuted) return;
+    try {
+      if (!this.initContext() || !this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(140, now + 0.22);
+
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.linearRampToValueAtTime(0.12, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } catch {
+      // Audio autoplay handled silently
+    }
+  }
 }
 
 export const soundEngine = new SoundEngine();

@@ -7,18 +7,18 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: rgba(255, 248, 241, 0.88);
+  background-color: var(--navbar-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1.5px solid var(--border-color);
   padding: 0.65rem 1.5rem;
-  transition: all 0.3s ease;
+  transition: border-bottom-color 0.2s ease;
   width: 100%;
 }
 
 [data-theme='midnight'] .dream-header {
-  background-color: rgba(9, 11, 32, 0.88);
-  border-bottom-color: rgba(119, 125, 255, 0.25);
+  background-color: var(--navbar-bg);
+  border-bottom-color: var(--border-color);
 }
 
 .dream-header-container {
@@ -452,4 +452,136 @@
   .dream-delivery-exhibit {
     padding: 1.5rem 1rem !important;
   }
+}
+
+/* ==========================================================================
+   9. PHYSICAL STORYBOOK TOME & TICKET SHELF (ARCHIVE)
+   ========================================================================== */
+.storybook-wrapper {
+  position: relative;
+  perspective: 1200px;
+}
+
+.storybook-tome {
+  position: relative;
+  border-radius: 24px;
+  background-color: var(--bg-surface);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 25px 60px -15px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.storybook-pages-stack {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  box-shadow: 
+    0 4px 0 2px var(--bg-retro-panel),
+    0 8px 0 4px var(--border-color),
+    0 12px 0 6px var(--bg-retro-panel);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.storybook-gutter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 32px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(0, 0, 0, 0.06) 35%, 
+    rgba(0, 0, 0, 0.14) 50%, 
+    rgba(0, 0, 0, 0.06) 65%, 
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 5;
+}
+
+[data-theme='midnight'] .storybook-gutter {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(0, 0, 0, 0.3) 35%, 
+    rgba(0, 0, 0, 0.55) 50%, 
+    rgba(0, 0, 0, 0.3) 65%, 
+    transparent 100%
+  );
+}
+
+.storybook-ribbon {
+  position: absolute;
+  top: -6px;
+  right: 56px;
+  width: 26px;
+  height: 84px;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  transition: all 0.4s ease;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+.bedside-shelf-plank {
+  height: 14px;
+  background: linear-gradient(180deg, #92400e 0%, #78350f 50%, #451a03 100%);
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  margin-top: 0.75rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.bedside-shelf-plank::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 5%;
+  right: 5%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  filter: blur(4px);
+}
+
+.bedtime-ticket-card {
+  position: relative;
+  background-color: var(--bg-surface);
+  border-radius: 16px;
+  border: 1.5px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.bedtime-ticket-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px -8px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-berry);
+}
+
+.ticket-scallop-left,
+.ticket-scallop-right {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background-color: var(--bg-primary);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  border: 1.5px solid var(--border-color);
+  z-index: 2;
+}
+
+.ticket-scallop-left {
+  left: -9px;
+}
+
+.ticket-scallop-right {
+  right: -9px;
 }

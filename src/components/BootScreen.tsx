@@ -83,10 +83,10 @@ export const BootScreen: React.FC<BootScreenProps> = ({
 
       const tl = gsap.timeline();
 
-      // Initial state
-      gsap.set([titleRef.current, pipRef.current, enterBtnRef.current], {
+      // Stage 1: Darkness & Deep Cosmic Silence (Initial state)
+      gsap.set([titleRef.current, pipRef.current, enterBtnRef.current, lanternHaloRef.current], {
         opacity: 0,
-        y: 20
+        y: 18
       });
 
       if (dreamPathRef.current) {
@@ -97,42 +97,57 @@ export const BootScreen: React.FC<BootScreenProps> = ({
         });
       }
 
-      // Step 2 (0.4s): Stars and title appear
-      tl.to(titleRef.current, {
+      // Stage 2 (0.4s to 1.6s): Constellation Formation — Golden dream route draws across the cosmos
+      tl.to(dreamPathRef.current, {
+        strokeDashoffset: 0,
+        duration: 1.3,
+        ease: 'power1.inOut',
+        onStart: () => {
+          setDiagnosticMsg('CHARTING CELESTIAL DREAMWAYS // 432 Hz');
+        }
+      }, 0.4)
+
+      // Stage 3 (1.4s to 2.4s): Astrolabe & Celestial Dial Awakening — Header title reveals
+      .to(titleRef.current, {
         opacity: 1,
         y: 0,
-        duration: 0.8,
+        duration: 0.9,
         ease: 'power2.out',
         onStart: () => {
-          setDiagnosticMsg('CALIBRATING 432 Hz LULLABY RESONATORS...');
-          if (!isMuted) soundEngine.playMusicBoxNote(440, 1.2);
+          setDiagnosticMsg('ALIGNING NURSERY CONSTELLATIONS & LULLABY RESONATORS...');
         }
-      })
-      // Step 3 (1.2s): Golden particle dream path draws across screen
-      .to(dreamPathRef.current, {
-        strokeDashoffset: 0,
-        duration: 1.4,
-        ease: 'power1.inOut'
-      }, '-=0.2')
-      // Step 4 (1.8s): Pip and lantern awaken
+      }, 1.4)
+
+      // Stage 4 (2.2s to 3.4s): Starlight Lantern Ignition — Pip awakens and lantern halo blooms
       .to(pipRef.current, {
         opacity: 1,
         y: 0,
         duration: 0.9,
-        ease: 'back.out(1.4)',
+        ease: 'back.out(1.2)',
         onStart: () => {
           setDiagnosticMsg('STARLIGHT LANTERN IGNITED // FREQ 432.0 Hz');
-          if (!isMuted) soundEngine.playMusicBoxNote(523.25, 1.4);
         }
-      }, '-=0.6')
-      // Step 5 (2.5s): Lantern halo expands
+      }, 2.2)
       .to(lanternHaloRef.current, {
-        scale: 1.4,
+        scale: 1.5,
         opacity: 0.95,
-        duration: 1.0,
+        duration: 0.9,
         ease: 'power2.out'
-      }, '-=0.5')
-      // Step 6 (3.2s): Readiness achieved
+      }, 2.5)
+
+      // Stage 5 (3.2s to 4.0s): Golden Light Sweep Climax — Warm radial starlight pulse sweeps outwards
+      .fromTo(flareRef.current, 
+        { scale: 0.3, opacity: 0 },
+        { scale: 2.2, opacity: 0.65, duration: 0.6, ease: 'power2.out' },
+        3.2
+      )
+      .to(flareRef.current, {
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.in'
+      }, 3.8)
+
+      // Stage 6 (4.0s+): Readiness & Seamless Reveal — Enter CTA unlocks
       .to(enterBtnRef.current, {
         opacity: 1,
         y: 0,
@@ -140,14 +155,13 @@ export const BootScreen: React.FC<BootScreenProps> = ({
         ease: 'power2.out',
         onComplete: () => {
           setDiagnosticMsg('✦ MIDNIGHT NURSERY ONLINE // READY TO ENTER');
-          if (!isMuted) soundEngine.playMusicBoxNote(659.25, 1.0);
         }
-      }, '-=0.2');
+      }, 4.0);
 
     }, containerRef);
 
     return () => ctx.revert();
-  }, [isReducedMotion, isMuted]);
+  }, [isReducedMotion]);
 
   // Keyboard shortcut listener: Enter / Space to enter, Esc to skip immediately
   useEffect(() => {

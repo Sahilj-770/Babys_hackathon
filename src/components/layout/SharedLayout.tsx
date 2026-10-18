@@ -18,9 +18,10 @@ export const SharedLayout: React.FC = () => {
 
   const location = useLocation();
 
-  // Scroll to top and subtle fade on route changes
+  // Scroll to top, reset scroll night progress, and subtle fade on route changes
   useEffect(() => {
     window.scrollTo(0, 0);
+    document.documentElement.style.setProperty('--scroll-night-progress', '0');
     const mainEl = document.getElementById('main-content');
     if (mainEl) {
       gsap.fromTo(
