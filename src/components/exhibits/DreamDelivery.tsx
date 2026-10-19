@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { soundEngine } from '../../audio/soundEngine';
 import type { DreamDeliveryStop } from '../../types';
+import { unlockFragment } from '../../utils/passportStorage';
 
 const STOPS: DreamDeliveryStop[] = [
   { id: 1, label: 'Clover Cottage', recipient: 'Baby Leo', dreamType: 'Warm Milk & Kitten Paws', x: 80, y: 150 },
@@ -98,6 +99,7 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
       setSliderProgress((nextIndex / (STOPS.length - 1)) * 100);
       setIsDelivering(false);
       soundEngine.playCelebrationChime();
+      unlockFragment('rooftop');
       if (onDreamDelivered) onDreamDelivered();
     }, 700);
   };
@@ -106,6 +108,7 @@ export const DreamDelivery: React.FC<DreamDeliveryProps> = ({ onDreamDelivered }
     setCurrentStopIndex(index);
     setSliderProgress((index / (STOPS.length - 1)) * 100);
     soundEngine.playClick(500 + index * 60);
+    unlockFragment('rooftop');
   };
 
   return (

@@ -8,17 +8,19 @@ interface HeroSectionProps {
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
   const [isNodding, setIsNodding] = useState(false);
   const [stardustBurst, setStardustBurst] = useState(false);
   const [secretClicks, setSecretClicks] = useState(0);
   const [secretHint, setSecretHint] = useState<string | null>(null);
+  const [isSleepy, setIsSleepy] = useState(false);
+  const [lanternIgnited, setLanternIgnited] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const portraitColRef = useRef<HTMLDivElement>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const idleTimerRef = useRef<number | null>(null);
 
-  // Subtle entrance reveal on mount
+  // Subtle entrance reveal on mount & Inactivity idle loop
   useEffect(() => {
     if (containerRef.current) {
       gsap.fromTo(
@@ -27,21 +29,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
         { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
       );
     }
+
+    const resetIdle = () => {
+      setIsSleepy(false);
+      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = window.setTimeout(() => {
+        setIsSleepy(true);
+      }, 12000);
+    };
+
+    window.addEventListener('pointermove', resetIdle, { passive: true });
+    window.addEventListener('keydown', resetIdle, { passive: true });
+    idleTimerRef.current = window.setTimeout(() => setIsSleepy(true), 12000);
+
+    return () => {
+      window.removeEventListener('pointermove', resetIdle);
+      window.removeEventListener('keydown', resetIdle);
+      if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+    };
   }, []);
 
-  // Fine-pointer mouse movement handler for organic parallax
+  // Fine-pointer mouse movement handler: Direct CSS variables, zero React re-render thrashing
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const isFine = window.matchMedia('(pointer: fine)').matches;
-    if (!isFine || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    if (!isFine || !portraitColRef.current) return;
+    const rect = portraitColRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setTilt({ x: x * 18, y: -y * 18 });
+    portraitColRef.current.style.setProperty('--pip-tilt-x', `${(x * 16).toFixed(2)}deg`);
+    portraitColRef.current.style.setProperty('--pip-tilt-y', `${(-y * 16).toFixed(2)}deg`);
   };
 
   const handleMouseLeave = () => {
-    setIsHovering(false);
-    setTilt({ x: 0, y: 0 });
+    if (!portraitColRef.current) return;
+    portraitColRef.current.style.setProperty('--pip-tilt-x', '0deg');
+    portraitColRef.current.style.setProperty('--pip-tilt-y', '0deg');
   };
 
   // Touch alternative for mobile & tablets
@@ -52,17 +74,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!touchStartRef.current || !containerRef.current || e.touches.length !== 1) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    if (!touchStartRef.current || !portraitColRef.current || e.touches.length !== 1) return;
+    const rect = portraitColRef.current.getBoundingClientRect();
     const touch = e.touches[0];
     const dx = Math.max(-1, Math.min(1, (touch.clientX - rect.left) / rect.width - 0.5));
     const dy = Math.max(-1, Math.min(1, (touch.clientY - rect.top) / rect.height - 0.5));
-    setTilt({ x: dx * 14, y: -dy * 14 });
+    portraitColRef.current.style.setProperty('--pip-tilt-x', `${(dx * 12).toFixed(2)}deg`);
+    portraitColRef.current.style.setProperty('--pip-tilt-y', `${(-dy * 12).toFixed(2)}deg`);
   };
 
   const handleTouchEnd = () => {
     touchStartRef.current = null;
-    setTilt({ x: 0, y: 0 });
+    if (portraitColRef.current) {
+      portraitColRef.current.style.setProperty('--pip-tilt-x', '0deg');
+      portraitColRef.current.style.setProperty('--pip-tilt-y', '0deg');
+    }
+  };
+
+  // Coordinated hover on primary action buttons
+  const handleButtonHover = (leanAngle: string) => {
+    if (portraitColRef.current) {
+      portraitColRef.current.style.setProperty('--pip-lean', leanAngle);
+      portraitColRef.current.style.setProperty('--pip-halo-scale', '1.18');
+    }
+  };
+
+  const handleButtonLeave = () => {
+    if (portraitColRef.current) {
+      portraitColRef.current.style.setProperty('--pip-lean', '0deg');
+      portraitColRef.current.style.setProperty('--pip-halo-scale', '1');
+    }
   };
 
   // Tap Pip for sleepy nod gesture
@@ -74,11 +115,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
     setTimeout(() => setIsNodding(false), 550);
   };
 
-  // Stardust action
+  // Starlight action
   const handleWhisperStardust = () => {
     soundEngine.playMusicBoxNote(783.99, 1.6);
     setStardustBurst(true);
     setTimeout(() => setStardustBurst(false), 1400);
+  };
+
+  // Starlight lantern click reaction
+  const handleLanternClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (lanternIgnited) return;
+    setLanternIgnited(true);
+    soundEngine.playClick(620);
+    soundEngine.playMusicBoxNote(587.33, 1.4);
+    setTimeout(() => setLanternIgnited(false), 1600);
   };
 
   // 3-click secret star Easter egg
@@ -273,6 +324,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
                 fontSize: '0.96rem'
               }}
               onClick={() => soundEngine.playMusicBoxNote(523.25)}
+              onMouseEnter={() => handleButtonHover('-3deg')}
+              onMouseLeave={handleButtonLeave}
             >
               <BedDouble size={18} />
               <span>Explore Dream Labs</span>
@@ -288,6 +341,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
                 backgroundColor: 'var(--bg-surface)'
               }}
               onClick={() => soundEngine.playClick(480)}
+              onMouseEnter={() => handleButtonHover('3deg')}
+              onMouseLeave={handleButtonLeave}
             >
               <Compass size={17} color="var(--color-berry)" />
               <span>Read Origin Story</span>
@@ -295,6 +350,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
 
             <button
               onClick={handleWhisperStardust}
+              onMouseEnter={() => handleButtonHover('-2deg')}
+              onMouseLeave={handleButtonLeave}
               className="retro-btn hero-whisper-btn"
               style={{
                 padding: '0.85rem 1.15rem',
@@ -314,9 +371,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
 
         {/* Right Column: Unboxed Large Pip Centerpiece Artwork */}
         <div
-          ref={containerRef}
+          ref={portraitColRef}
           onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={handleMouseLeave}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -349,7 +405,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
           {/* Unboxed Large Pip Artwork Anchor */}
           <div
             onClick={handlePortraitTap}
-            className="pip-master-artwork"
+            className={`pip-master-artwork ${isSleepy ? 'pip-sleepy' : ''}`}
             style={{
               position: 'relative',
               width: '100%',
@@ -357,16 +413,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
               aspectRatio: '682 / 1024',
               transform: isNodding
                 ? 'translateY(10px) rotate(2.5deg) scale(0.97)'
-                : `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
-              transition: isHovering
-                ? 'transform 0.12s ease-out'
-                : 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                : 'rotateY(var(--pip-tilt-x, 0deg)) rotateX(var(--pip-tilt-y, 0deg)) rotate(var(--pip-lean, 0deg))',
+              transition: 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)',
               cursor: 'pointer',
               zIndex: 2
             }}
             title="Click or tap Pip to say hello"
             aria-label="Pip the Skull Baby, official centerpiece portrait. Tap to greet Pip."
           >
+            {/* Sleepy idle Zzz floating glyph */}
+            {isSleepy && (
+              <div className="pip-sleepy-glyph" aria-hidden="true">
+                <span>✦</span>
+                <span className="sleepy-z1">z</span>
+                <span className="sleepy-z2">Z</span>
+              </div>
+            )}
+
+            {/* Interactive Starlight Lantern Click Target */}
+            <button
+              type="button"
+              className={`pip-lantern-hotspot ${lanternIgnited ? 'ignited' : ''}`}
+              onClick={handleLanternClick}
+              title="Touch Pip's Bedtime Lantern"
+              aria-label="Touch Pip's Bedtime Lantern for warm starlight glow"
+            >
+              <span className="lantern-pulse-ring" />
+              <span className="lantern-center-spark">✧</span>
+            </button>
+
             {/* Soft atmospheric base cloud layer */}
             <div
               className="pip-cloud-drift-base"
@@ -396,8 +471,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
                 objectFit: 'contain',
                 position: 'relative',
                 zIndex: 2,
-                filter:
-                  'drop-shadow(0 20px 35px rgba(92, 64, 51, 0.16)) drop-shadow(0 0 50px rgba(255, 216, 138, 0.55))',
+                filter: lanternIgnited
+                  ? 'drop-shadow(0 20px 45px rgba(255, 216, 138, 0.6)) drop-shadow(0 0 65px rgba(255, 230, 160, 0.85))'
+                  : 'drop-shadow(0 20px 35px rgba(92, 64, 51, 0.16)) drop-shadow(0 0 50px rgba(255, 216, 138, 0.55))',
                 transition: 'filter 0.4s ease'
               }}
             />

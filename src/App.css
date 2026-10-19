@@ -585,3 +585,192 @@
 .ticket-scallop-right {
   right: -9px;
 }
+
+/* ==========================================================================
+   10. PIP LIVING COMPANION
+   ========================================================================== */
+.pip-master-artwork.pip-sleepy {
+  animation: pip-sleepy-breathe 4.5s infinite ease-in-out;
+}
+
+@keyframes pip-sleepy-breathe {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(0.985) translateY(4px);
+  }
+}
+
+/* Sleepy idle Zzz floating glyph */
+.pip-sleepy-glyph {
+  position: absolute;
+  top: 8%;
+  right: 14%;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--color-gold);
+  text-shadow: 0 0 10px rgba(255, 216, 138, 0.8);
+  pointer-events: none;
+  z-index: 10;
+  animation: sleepy-float 3s infinite ease-in-out;
+}
+
+.pip-sleepy-glyph .sleepy-z1 {
+  font-size: 1.05rem;
+  font-weight: bold;
+}
+
+.pip-sleepy-glyph .sleepy-z2 {
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+@keyframes sleepy-float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(-9px) rotate(4deg);
+    opacity: 1;
+  }
+}
+
+/* Interactive Starlight Lantern Hotspot */
+.pip-lantern-hotspot {
+  position: absolute;
+  bottom: 22%;
+  right: 16%;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 216, 138, 0.4);
+  background: radial-gradient(circle, rgba(255, 230, 160, 0.3) 0%, rgba(255, 216, 138, 0.1) 60%, transparent 80%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  padding: 0;
+  outline: none;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease;
+}
+
+.pip-lantern-hotspot:hover,
+.pip-lantern-hotspot:focus-visible {
+  transform: scale(1.15);
+  border-color: var(--color-gold);
+  background: radial-gradient(circle, rgba(255, 230, 160, 0.6) 0%, rgba(255, 216, 138, 0.3) 60%, transparent 80%);
+  box-shadow: 0 0 20px rgba(255, 216, 138, 0.5);
+}
+
+.pip-lantern-hotspot.ignited {
+  transform: scale(1.3);
+  border-color: #ffffff;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 216, 138, 0.75) 50%, transparent 85%);
+  box-shadow: 0 0 45px rgba(255, 230, 160, 0.9), 0 0 75px rgba(255, 216, 138, 0.6);
+}
+
+.pip-lantern-hotspot .lantern-center-spark {
+  color: var(--color-gold);
+  font-size: 1.1rem;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(255, 216, 138, 0.9);
+  transition: transform 0.3s ease;
+}
+
+.pip-lantern-hotspot:hover .lantern-center-spark {
+  transform: rotate(25deg) scale(1.2);
+}
+
+.pip-lantern-hotspot .lantern-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 216, 138, 0.5);
+  animation: spin-slow 16s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pip-master-artwork {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  .pip-sleepy-glyph {
+    animation: none !important;
+  }
+  .pip-lantern-hotspot .lantern-pulse-ring {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   11. PURPOSEFUL CHAOS MODE (1999 CRT RETRO OS)
+   ========================================================================== */
+body.chaos-mode::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    rgba(0, 0, 0, 0.14) 2px,
+    rgba(0, 0, 0, 0.14) 4px
+  );
+  mix-blend-mode: overlay;
+}
+
+body.chaos-mode::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9994;
+  pointer-events: none;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.65), inset 0 0 35px rgba(255, 216, 138, 0.1);
+}
+
+body.chaos-mode .font-mono {
+  text-shadow: 0 0 6px rgba(255, 216, 138, 0.55);
+}
+
+body.chaos-mode .retro-btn {
+  box-shadow: 3px 3px 0px var(--color-cocoa) !important;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+body.chaos-mode .retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--color-cocoa) !important;
+}
+
+.retro-btn.active-chaos {
+  background-color: var(--color-gold) !important;
+  color: #3b2512 !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(255, 216, 138, 0.9) !important;
+}
+
+/* Pip's artwork is never distorted or desaturated */
+body.chaos-mode img,
+body.chaos-mode .pip-portrait-main,
+body.chaos-mode .pip-master-artwork,
+body.chaos-mode .lullaby-box-holder img {
+  filter: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.chaos-mode::before,
+  body.chaos-mode::after {
+    display: none !important;
+  }
+}
+

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 import { getAllSavedTickets, deleteSavedTicket } from '../utils/dreamStorage';
+import { unlockFragment } from '../utils/passportStorage';
 import type { SavedDreamTicket } from '../components/exhibits/DreamForge';
 
 interface StoryChapter {
@@ -88,6 +89,13 @@ export const BedtimeArchivePage: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Unlock Story Star when reaching Chapter III
+  useEffect(() => {
+    if (activeChapterIdx === 2) {
+      unlockFragment('story');
+    }
+  }, [activeChapterIdx]);
 
   const activeChapter = CHAPTERS[activeChapterIdx];
 

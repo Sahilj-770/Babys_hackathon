@@ -14,6 +14,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
+import { unlockFragment } from '../utils/passportStorage';
 
 interface Destination {
   id: number;
@@ -138,6 +139,7 @@ export const MidnightAtlasPage: React.FC = () => {
     setFlightProgress(targetProgress);
     updatePipAtProgress(targetProgress / 100);
     soundEngine.playClick(440 + index * 40);
+    unlockFragment('rooftop');
   };
 
   // Dispatch dream action

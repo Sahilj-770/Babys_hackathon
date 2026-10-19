@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, Sun, Moon, Radio, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Radio, Sparkles, Compass } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 import type { ThemeMode } from '../types';
+import {
+  getUnlockedCount,
+  PASSPORT_EVENT_NAME,
+  STAR_FRAGMENTS,
+  type StarFragmentId
+} from '../utils/passportStorage';
 
 interface OSNavbarProps {
   theme: ThemeMode;
@@ -12,6 +18,7 @@ interface OSNavbarProps {
   chaosMode: boolean;
   onToggleChaos: () => void;
   onOpenSecret: () => void;
+  onOpenPassport: () => void;
   isArcadeUnlocked?: boolean;
 }
 
@@ -23,11 +30,33 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
   chaosMode,
   onToggleChaos,
   onOpenSecret,
+  onOpenPassport,
   isArcadeUnlocked = false
 }) => {
   const [secretClicks, setSecretClicks] = useState(0);
   const [secretHint, setSecretHint] = useState<string | null>(null);
+  const [unlockedCount, setUnlockedCount] = useState<number>(() => getUnlockedCount());
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Listen for passport updates
+  useEffect(() => {
+    const handleUpdate = (e: Event) => {
+      setUnlockedCount(getUnlockedCount());
+      const customEvent = e as CustomEvent<{ fragmentId?: StarFragmentId }>;
+      if (customEvent.detail && customEvent.detail.fragmentId) {
+        const frag = STAR_FRAGMENTS[customEvent.detail.fragmentId];
+        if (frag) {
+          soundEngine.playCelebrationChime();
+          setToastMsg(`✦ Star Fragment Discovered: ${frag.name}!`);
+          setTimeout(() => setToastMsg(null), 3800);
+        }
+      }
+    };
+
+    window.addEventListener(PASSPORT_EVENT_NAME, handleUpdate);
+    return () => window.removeEventListener(PASSPORT_EVENT_NAME, handleUpdate);
+  }, []);
 
   const handleSecretStarClick = () => {
     const next = secretClicks + 1;
@@ -116,6 +145,24 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
 
         {/* Action Controls Strip */}
         <div className="dream-controls-strip">
+          {/* Constellation Passport Button */}
+          <button
+            onClick={() => {
+              soundEngine.playMusicBoxNote(659.25);
+              onOpenPassport();
+            }}
+            className="retro-btn dream-tool-btn passport-nav-pill"
+            style={{
+              backgroundColor: unlockedCount === 4 ? 'rgba(255, 216, 138, 0.25)' : undefined,
+              borderColor: unlockedCount > 0 ? 'var(--color-gold)' : undefined
+            }}
+            title="Open Constellation Passport & Celestial Map"
+            aria-label={`Constellation Passport, ${unlockedCount} of 4 fragments unlocked`}
+          >
+            <Compass size={13} color="var(--color-gold)" />
+            <span className="font-mono btn-text">✦ {unlockedCount}/4</span>
+          </button>
+
           {/* Secret Easter Egg star (Requires 3 clicks) */}
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             {secretHint && (
@@ -202,6 +249,35 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Toast Notification for Star Fragment Discovery */}
+      {toastMsg && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: '72px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: '#1c142b',
+            color: '#ffd88a',
+            border: '1.5px solid var(--color-gold)',
+            borderRadius: '999px',
+            padding: '0.45rem 1.25rem',
+            fontFamily: 'monospace',
+            fontSize: '0.78rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255, 216, 138, 0.4)',
+            zIndex: 1100,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            pointerEvents: 'none'
+          }}
+        >
+          <span>{toastMsg}</span>
+        </div>
+      )}
     </header>
   );
 };

@@ -17,9 +17,14 @@ import {
   Volume2,
   RefreshCw,
   CheckCircle2,
-  Radio
+  Radio,
+  Mail,
+  Download,
+  X
 } from 'lucide-react';
 import soundEngine from '../../audio/soundEngine';
+import { unlockFragment } from '../../utils/passportStorage';
+import { generatePostcardDataUrl, downloadDataUrl } from '../../utils/postcardCanvas';
 
 // ============================================================================
 // Types & Definitions
@@ -755,6 +760,9 @@ export const DreamForge: React.FC = () => {
   const [isSavedFeedback, setIsSavedFeedback] = useState(false);
   const [isCopiedFeedback, setIsCopiedFeedback] = useState(false);
   const [isForgingAnimation, setIsForgingAnimation] = useState(false);
+  const [isPostcardModalOpen, setIsPostcardModalOpen] = useState(false);
+  const [postcardPreviewUrl, setPostcardPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingPostcard, setIsGeneratingPostcard] = useState(false);
 
   const currentWorldObj = WORLDS.find((w) => w.id === selectedWorld)!;
   const currentCompanionObj = COMPANIONS.find((c) => c.id === selectedCompanion)!;
@@ -766,6 +774,38 @@ export const DreamForge: React.FC = () => {
     selectedFeeling,
     storyVariantIndex
   );
+
+  // Generate bedtime dream postcard via HTML5 Canvas
+  const handleOpenPostcard = async () => {
+    soundEngine.playClick(560);
+    setIsGeneratingPostcard(true);
+    try {
+      const url = await generatePostcardDataUrl({
+        title: dreamTitle,
+        worldName: currentWorldObj.name,
+        companionName: currentCompanionObj.name,
+        feelingName: currentFeelingObj.name,
+        story: dreamStory,
+        frequency: `${currentWorldObj.resonanceFreq.toFixed(1)} Hz`,
+        timestamp: 'Tonight',
+        colors: currentWorldObj.colors
+      });
+      setPostcardPreviewUrl(url);
+      setIsPostcardModalOpen(true);
+      soundEngine.playMusicBoxNote(659.25, 1.2);
+    } catch (err) {
+      console.warn('[Postcard] Failed to generate canvas postcard:', err);
+    } finally {
+      setIsGeneratingPostcard(false);
+    }
+  };
+
+  const handleDownloadPostcard = () => {
+    if (!postcardPreviewUrl) return;
+    soundEngine.playCelebrationChime();
+    const cleanFilename = `pip-dream-postcard-${dreamTitle.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`;
+    downloadDataUrl(postcardPreviewUrl, cleanFilename);
+  };
 
   // Sound feedback on World change
   const handleSelectWorld = (worldId: WorldId) => {
@@ -824,6 +864,7 @@ export const DreamForge: React.FC = () => {
     setTimeout(() => {
       setIsForgingAnimation(false);
       setActiveStep(4);
+      unlockFragment('dream');
     }, 450);
   };
 
@@ -1783,6 +1824,32 @@ export const DreamForge: React.FC = () => {
                   {isSavedFeedback ? 'Saved in Browser Journal!' : 'Save Dream Locally'}
                 </button>
 
+                {/* 1b. Bedtime Postcard Export (.PNG) */}
+                <button
+                  onClick={handleOpenPostcard}
+                  disabled={isGeneratingPostcard}
+                  className="retro-btn dream-postcard-btn"
+                  aria-label="Export high-resolution vintage bedtime postcard as PNG"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
+                    padding: '0.7rem 1.15rem',
+                    borderRadius: '12px',
+                    backgroundColor: 'var(--color-gold)',
+                    color: '#3b2512',
+                    border: '1.5px solid #ffffff',
+                    fontWeight: 700,
+                    fontSize: '0.84rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(255, 216, 138, 0.4)'
+                  }}
+                >
+                  <Mail size={16} />
+                  <span>{isGeneratingPostcard ? 'Rendering...' : 'Bedtime Postcard (.PNG)'}</span>
+                </button>
+
                 {/* 2. Copy Ticket Text to Clipboard */}
                 <button
                   onClick={handleCopyTicket}
@@ -2304,6 +2371,130 @@ export const DreamForge: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Bedtime Postcard Preview Modal */}
+      {isPostcardModalOpen && postcardPreviewUrl && (
+        <div
+          className="dream-modal-backdrop"
+          onClick={() => setIsPostcardModalOpen(false)}
+          role="presentation"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(26, 17, 39, 0.82)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.25rem'
+          }}
+        >
+          <div
+            className="retro-panel postcard-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="postcard-modal-title"
+            style={{
+              width: '100%',
+              maxWidth: '860px',
+              backgroundColor: 'var(--bg-surface)',
+              borderRadius: '16px',
+              padding: '1.75rem',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255, 216, 138, 0.3)',
+              border: '2px solid var(--color-gold)'
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid var(--border-color)',
+                paddingBottom: '0.85rem',
+                marginBottom: '1.25rem'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Mail size={18} color="var(--color-gold)" />
+                <h3
+                  id="postcard-modal-title"
+                  className="font-serif"
+                  style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-main)' }}
+                >
+                  Bedtime Postcard Preview
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsPostcardModalOpen(false)}
+                className="retro-btn"
+                style={{ padding: '0.45rem' }}
+                aria-label="Close postcard preview"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Postcard Image Preview */}
+            <div
+              style={{
+                borderRadius: '8px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.25)',
+                border: '1px solid var(--border-color)',
+                marginBottom: '1.25rem'
+              }}
+            >
+              <img
+                src={postcardPreviewUrl}
+                alt={`Bedtime dream postcard for ${dreamTitle}`}
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
+            </div>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}
+            >
+              <span className="font-mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                HIGH-RESOLUTION 1200×750 PNG // CALIBRATED 432 Hz
+              </span>
+
+              <div style={{ display: 'flex', gap: '0.65rem' }}>
+                <button
+                  onClick={() => setIsPostcardModalOpen(false)}
+                  className="retro-btn"
+                  style={{ padding: '0.55rem 1.1rem' }}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={handleDownloadPostcard}
+                  className="retro-btn"
+                  style={{
+                    backgroundColor: 'var(--color-gold)',
+                    color: '#3b2512',
+                    padding: '0.55rem 1.35rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.45rem'
+                  }}
+                >
+                  <Download size={15} />
+                  <span>Download Postcard (.PNG)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
