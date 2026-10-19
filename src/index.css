@@ -25,7 +25,8 @@
   --day-text-heading: #26160f;
   --day-accent-color: #a34063;
   --day-glow-color: rgba(255, 216, 138, 0.45);
-  --day-shadow-retro: 3px 3px 0px #5c4033;
+  --day-shadow-retro-color: #5c4033;
+  --day-shadow-retro: 3px 3px 0px var(--day-shadow-retro-color);
   --day-navbar-bg: rgba(255, 248, 241, 0.88);
 
   /* Base Midnight tokens */
@@ -40,7 +41,8 @@
   --night-text-heading: #ffffff;
   --night-accent-color: #ffd88a;
   --night-glow-color: rgba(119, 125, 255, 0.4);
-  --night-shadow-retro: 3px 3px 0px #777dff;
+  --night-shadow-retro-color: #777dff;
+  --night-shadow-retro: 3px 3px 0px var(--night-shadow-retro-color);
   --night-navbar-bg: rgba(9, 11, 32, 0.92);
 
   /* Dynamic scroll progress (0 in daydream, scrubs to 1 during cinematic sequence) */
@@ -58,7 +60,8 @@
   --text-heading: color-mix(in srgb, var(--night-text-heading) calc(var(--scroll-night-progress, 0) * 100%), var(--day-text-heading));
   --accent-color: color-mix(in srgb, var(--night-accent-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-accent-color));
   --glow-color: color-mix(in srgb, var(--night-glow-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-glow-color));
-  --shadow-retro: color-mix(in srgb, var(--night-shadow-retro) calc(var(--scroll-night-progress, 0) * 100%), var(--day-shadow-retro));
+  --shadow-retro-color: color-mix(in srgb, var(--night-shadow-retro-color) calc(var(--scroll-night-progress, 0) * 100%), var(--day-shadow-retro-color));
+  --shadow-retro: 3px 3px 0px var(--shadow-retro-color);
   --navbar-bg: color-mix(in srgb, var(--night-navbar-bg) calc(var(--scroll-night-progress, 0) * 100%), var(--day-navbar-bg));
   --shadow-soft: 0 10px 30px -8px rgba(92, 64, 51, 0.08), 0 4px 12px -2px rgba(92, 64, 51, 0.05);
 
@@ -80,6 +83,7 @@
   --accent-color: var(--night-accent-color);
   --glow-color: var(--night-glow-color);
   --shadow-soft: 0 10px 35px -5px rgba(0, 0, 0, 0.6);
+  --shadow-retro-color: var(--night-shadow-retro-color);
   --shadow-retro: var(--night-shadow-retro);
   --navbar-bg: var(--night-navbar-bg);
 }
@@ -120,6 +124,7 @@ body {
   min-height: 100vh;
   position: relative;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 /* Accessible focus outline */

@@ -134,6 +134,7 @@ export const CinematicScrollSequence: React.FC = () => {
             anticipatePin: 1,
             fastScrollEnd: true,
             preventOverlaps: true,
+            invalidateOnRefresh: true,
             onUpdate: (self) => {
               // Direct CSS variable updates on documentElement: zero React re-render thrashing
               document.documentElement.style.setProperty(

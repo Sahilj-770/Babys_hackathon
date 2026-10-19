@@ -26,7 +26,7 @@ export const SharedLayout: React.FC = () => {
 
   // Cinematic starlight aperture transition on route changes
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     document.documentElement.style.setProperty('--scroll-night-progress', '0');
 
     // Skip transition on initial app mount
@@ -47,9 +47,11 @@ export const SharedLayout: React.FC = () => {
 
     if (isReduced || !wipeEl) {
       if (mainEl) {
-        gsap.fromTo(mainEl, { opacity: 0.85 }, { opacity: 1, duration: 0.2, ease: 'power1.out' });
+        gsap.fromTo(mainEl, { opacity: 0.85 }, { opacity: 1, duration: 0.2, ease: 'power1.out', clearProps: 'all' });
       }
-      ScrollTrigger.refresh();
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+      });
       return;
     }
 
@@ -58,10 +60,12 @@ export const SharedLayout: React.FC = () => {
 
     const tl = gsap.timeline({
       onComplete: () => {
-        ScrollTrigger.refresh();
         if (wipeEl) {
           gsap.set(wipeEl, { opacity: 0 });
         }
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
       }
     });
 
@@ -70,17 +74,21 @@ export const SharedLayout: React.FC = () => {
     tl.set(wipeEl, { opacity: 1, clipPath: 'circle(0% at 50% 50%)' })
       .to(wipeEl, {
         clipPath: 'circle(120% at 50% 50%)',
-        duration: 0.25,
+        duration: 0.22,
         ease: 'power2.in'
       })
       .add(() => {
         if (mainEl) {
-          gsap.fromTo(mainEl, { opacity: 0.75, y: 6 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' });
+          gsap.fromTo(
+            mainEl,
+            { opacity: 0.8 },
+            { opacity: 1, duration: 0.2, ease: 'power2.out', clearProps: 'all' }
+          );
         }
       })
       .to(wipeEl, {
         opacity: 0,
-        duration: 0.2,
+        duration: 0.18,
         ease: 'power2.out'
       });
 
@@ -91,6 +99,9 @@ export const SharedLayout: React.FC = () => {
       }
       if (wipeEl) {
         gsap.set(wipeEl, { opacity: 0 });
+      }
+      if (mainEl) {
+        gsap.set(mainEl, { clearProps: 'all' });
       }
     };
   }, [location.pathname]);

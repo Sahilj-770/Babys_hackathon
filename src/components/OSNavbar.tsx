@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, Sun, Moon, Radio, Sparkles, Compass } from 'lucide-react';
+import { Volume2, VolumeX, Sun, Moon, Radio, Sparkles, Compass, Menu, X } from 'lucide-react';
 import { soundEngine } from '../audio/soundEngine';
 import type { ThemeMode } from '../types';
 import {
@@ -37,7 +37,19 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
   const [secretHint, setSecretHint] = useState<string | null>(null);
   const [unlockedCount, setUnlockedCount] = useState<number>(() => getUnlockedCount());
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Close mobile menu on ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen]);
 
   // Listen for passport updates
   useEffect(() => {
@@ -100,8 +112,8 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
           </div>
         </div>
 
-        {/* Multi-Page Navigation Links */}
-        <nav aria-label="Main Navigation" className="dream-nav">
+        {/* Desktop Multi-Page Navigation Links */}
+        <nav aria-label="Main Navigation" className="dream-nav desktop-nav">
           <NavLink
             to="/"
             end
@@ -164,7 +176,7 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
           </button>
 
           {/* Secret Easter Egg star (Requires 3 clicks) */}
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <div className="secret-star-control" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             {secretHint && (
               <span
                 className="font-mono"
@@ -201,7 +213,7 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
               soundEngine.playClick(chaosMode ? 320 : 640);
               onToggleChaos();
             }}
-            className={`retro-btn dream-tool-btn ${chaosMode ? 'active-chaos' : ''}`}
+            className={`retro-btn dream-tool-btn chaos-toggle-control ${chaosMode ? 'active-chaos' : ''}`}
             title="Toggle 1999 CRT Scanlines and Retro Chaos Mode"
             aria-label="Toggle Retro Chaos Mode"
           >
@@ -247,8 +259,145 @@ export const OSNavbar: React.FC<OSNavbarProps> = ({
               </>
             )}
           </button>
+
+          {/* Mobile Menu Hamburger Toggle */}
+          <button
+            onClick={() => {
+              soundEngine.playClick(isMobileMenuOpen ? 340 : 580);
+              setIsMobileMenuOpen((prev) => !prev);
+            }}
+            className={`retro-btn dream-tool-btn mobile-menu-btn ${isMobileMenuOpen ? 'open' : ''}`}
+            title={isMobileMenuOpen ? 'Close Menu' : 'Open Navigation Menu'}
+            aria-label={isMobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+            aria-expanded={isMobileMenuOpen}
+          >
+            {isMobileMenuOpen ? <X size={14} /> : <Menu size={14} />}
+            <span className="font-mono btn-text mobile-toggle-label">{isMobileMenuOpen ? 'Close' : 'Menu'}</span>
+          </button>
         </div>
       </div>
+
+      {/* Accessible Responsive Mobile Navigation Drawer */}
+      {isMobileMenuOpen && (
+        <div className="mobile-nav-drawer" role="dialog" aria-label="Mobile Navigation Menu">
+          <div className="mobile-drawer-header font-mono">
+            <span>PIP://DREAMOS_NAV // V1.99</span>
+            <button
+              onClick={() => {
+                soundEngine.playClick(320);
+                setIsMobileMenuOpen(false);
+              }}
+              className="mobile-drawer-close"
+              aria-label="Close menu"
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <nav className="mobile-drawer-links">
+            <NavLink
+              to="/"
+              end
+              onClick={() => {
+                soundEngine.playClick(440);
+                setIsMobileMenuOpen(false);
+              }}
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              <span className="drawer-link-icon">🌙</span>
+              <div className="drawer-link-text">
+                <span className="drawer-link-title">Nursery</span>
+                <span className="drawer-link-desc">Home & Cinematic Awakening</span>
+              </div>
+            </NavLink>
+            <NavLink
+              to="/dream-forge"
+              onClick={() => {
+                soundEngine.playClick(480);
+                setIsMobileMenuOpen(false);
+              }}
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              <span className="drawer-link-icon">✨</span>
+              <div className="drawer-link-text">
+                <span className="drawer-link-title">Dream Forge</span>
+                <span className="drawer-link-desc">Personalised Dream Machine</span>
+              </div>
+            </NavLink>
+            <NavLink
+              to="/atlas"
+              onClick={() => {
+                soundEngine.playClick(520);
+                setIsMobileMenuOpen(false);
+              }}
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              <span className="drawer-link-icon">🗺️</span>
+              <div className="drawer-link-text">
+                <span className="drawer-link-title">Midnight Atlas</span>
+                <span className="drawer-link-desc">Sky Cartography & Soundscapes</span>
+              </div>
+            </NavLink>
+            <NavLink
+              to="/archive"
+              onClick={() => {
+                soundEngine.playClick(560);
+                setIsMobileMenuOpen(false);
+              }}
+              className={({ isActive }) => (isActive ? 'active' : '')}
+            >
+              <span className="drawer-link-icon">📖</span>
+              <div className="drawer-link-text">
+                <span className="drawer-link-title">Bedtime Archive</span>
+                <span className="drawer-link-desc">Physical Storybook & Tickets</span>
+              </div>
+            </NavLink>
+            {isArcadeUnlocked && (
+              <NavLink
+                to="/secret-arcade"
+                onClick={() => {
+                  soundEngine.playClick(600);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={({ isActive }) => (isActive ? 'active secret-nav-link' : 'secret-nav-link')}
+              >
+                <span className="drawer-link-icon">★</span>
+                <div className="drawer-link-text">
+                  <span className="drawer-link-title">Secret Arcade</span>
+                  <span className="drawer-link-desc">Star Catcher Mini-Game</span>
+                </div>
+              </NavLink>
+            )}
+          </nav>
+
+          {/* Quick Retro Utilities inside Mobile Drawer */}
+          <div className="mobile-drawer-utilities">
+            <button
+              onClick={() => {
+                soundEngine.playClick(chaosMode ? 320 : 640);
+                onToggleChaos();
+              }}
+              className={`retro-btn dream-tool-btn drawer-util-btn ${chaosMode ? 'active-chaos' : ''}`}
+            >
+              <Radio size={13} />
+              <span className="font-mono">CRT Scanlines: {chaosMode ? 'ON' : 'OFF'}</span>
+            </button>
+
+            <button
+              onClick={handleSecretStarClick}
+              className="retro-btn dream-tool-btn drawer-util-btn"
+              title="Click secret star 3 times to unlock hidden chamber"
+            >
+              <Sparkles size={13} color="var(--color-gold)" />
+              <span className="font-mono">{secretHint ? secretHint : 'Secret Star Chamber'}</span>
+            </button>
+          </div>
+
+          <div className="mobile-drawer-footer font-mono">
+            <span>DAEMON: ONLINE</span>
+            <span>FREQ: 432 Hz</span>
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification for Star Fragment Discovery */}
       {toastMsg && (

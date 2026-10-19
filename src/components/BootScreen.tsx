@@ -83,11 +83,13 @@ export const BootScreen: React.FC<BootScreenProps> = ({
 
       const tl = gsap.timeline();
 
-      // Stage 1: Darkness & Deep Cosmic Silence (Initial state)
-      gsap.set([titleRef.current, pipRef.current, enterBtnRef.current, lanternHaloRef.current], {
-        opacity: 0,
-        y: 18
-      });
+      const initTargets = [titleRef.current, pipRef.current, enterBtnRef.current, lanternHaloRef.current].filter(Boolean);
+      if (initTargets.length > 0) {
+        gsap.set(initTargets, {
+          opacity: 0,
+          y: 18
+        });
+      }
 
       if (dreamPathRef.current) {
         const length = dreamPathRef.current.getTotalLength() || 800;
@@ -95,69 +97,76 @@ export const BootScreen: React.FC<BootScreenProps> = ({
           strokeDasharray: length,
           strokeDashoffset: length
         });
+        tl.to(dreamPathRef.current, {
+          strokeDashoffset: 0,
+          duration: 1.3,
+          ease: 'power1.inOut',
+          onStart: () => {
+            setDiagnosticMsg('CHARTING CELESTIAL DREAMWAYS // 432 Hz');
+          }
+        }, 0.4);
       }
 
-      // Stage 2 (0.4s to 1.6s): Constellation Formation — Golden dream route draws across the cosmos
-      tl.to(dreamPathRef.current, {
-        strokeDashoffset: 0,
-        duration: 1.3,
-        ease: 'power1.inOut',
-        onStart: () => {
-          setDiagnosticMsg('CHARTING CELESTIAL DREAMWAYS // 432 Hz');
-        }
-      }, 0.4)
-
       // Stage 3 (1.4s to 2.4s): Astrolabe & Celestial Dial Awakening — Header title reveals
-      .to(titleRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.9,
-        ease: 'power2.out',
-        onStart: () => {
-          setDiagnosticMsg('ALIGNING NURSERY CONSTELLATIONS & LULLABY RESONATORS...');
-        }
-      }, 1.4)
+      if (titleRef.current) {
+        tl.to(titleRef.current, {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          ease: 'power2.out',
+          onStart: () => {
+            setDiagnosticMsg('ALIGNING NURSERY CONSTELLATIONS & LULLABY RESONATORS...');
+          }
+        }, 1.4);
+      }
 
       // Stage 4 (2.2s to 3.4s): Starlight Lantern Ignition — Pip awakens and lantern halo blooms
-      .to(pipRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.9,
-        ease: 'back.out(1.2)',
-        onStart: () => {
-          setDiagnosticMsg('STARLIGHT LANTERN IGNITED // FREQ 432.0 Hz');
-        }
-      }, 2.2)
-      .to(lanternHaloRef.current, {
-        scale: 1.5,
-        opacity: 0.95,
-        duration: 0.9,
-        ease: 'power2.out'
-      }, 2.5)
+      if (pipRef.current) {
+        tl.to(pipRef.current, {
+          opacity: 1,
+          y: 0,
+          duration: 0.9,
+          ease: 'back.out(1.2)',
+          onStart: () => {
+            setDiagnosticMsg('STARLIGHT LANTERN IGNITED // FREQ 432.0 Hz');
+          }
+        }, 2.2);
+      }
+      if (lanternHaloRef.current) {
+        tl.to(lanternHaloRef.current, {
+          scale: 1.5,
+          opacity: 0.95,
+          duration: 0.9,
+          ease: 'power2.out'
+        }, 2.5);
+      }
 
       // Stage 5 (3.2s to 4.0s): Golden Light Sweep Climax — Warm radial starlight pulse sweeps outwards
-      .fromTo(flareRef.current, 
-        { scale: 0.3, opacity: 0 },
-        { scale: 2.2, opacity: 0.65, duration: 0.6, ease: 'power2.out' },
-        3.2
-      )
-      .to(flareRef.current, {
-        opacity: 0,
-        duration: 0.4,
-        ease: 'power2.in'
-      }, 3.8)
+      if (flareRef.current) {
+        tl.fromTo(flareRef.current, 
+          { scale: 0.3, opacity: 0 },
+          { scale: 2.2, opacity: 0.65, duration: 0.6, ease: 'power2.out' },
+          3.2
+        )
+        .to(flareRef.current, {
+          opacity: 0,
+          duration: 0.4,
+          ease: 'power2.in'
+        }, 3.8);
+      }
 
       // Stage 6 (4.0s+): Readiness & Seamless Reveal — Enter CTA unlocks
-      .to(enterBtnRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        onComplete: () => {
-          setDiagnosticMsg('✦ MIDNIGHT NURSERY ONLINE // READY TO ENTER');
-        }
-      }, 4.0);
-
+      if (enterBtnRef.current) {
+        tl.to(enterBtnRef.current, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          ease: 'power2.out',
+          onComplete: () => {
+            setDiagnosticMsg('✦ MIDNIGHT NURSERY ONLINE // READY TO ENTER');
+          }
+        }, 4.0);
+      }
     }, containerRef);
 
     return () => ctx.revert();
@@ -167,14 +176,14 @@ export const BootScreen: React.FC<BootScreenProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        handleEnter();
+        onEnter();
       } else if (e.key === 'Enter' || e.key === ' ') {
         handleEnter();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleEnter]);
+  }, [handleEnter, onEnter]);
 
   return (
     <div
