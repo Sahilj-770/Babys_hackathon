@@ -258,18 +258,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
         </div>
 
         {/* Asymmetrical 2-Column Editorial Poster Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0, 1.18fr) minmax(0, 0.82fr)',
-            gap: '3rem',
-            alignItems: 'center'
-          }}
-        >
+        <div className="hero-grid">
           {/* Left Column: Asymmetric Editorial Composition */}
           <div className="hero-text-col" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {/* Subtle monospaced metadata badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div className="hero-canon-badge-wrap" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <div
                 className="font-mono hero-canon-badge"
                 style={{
@@ -386,6 +379,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onOpenSecret }) => {
 
             {/* Prominent Action Callouts */}
             <div
+              className="hero-actions-bar"
               style={{
                 display: 'flex',
                 alignItems: 'center',

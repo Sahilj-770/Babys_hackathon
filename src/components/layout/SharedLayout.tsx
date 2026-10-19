@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useOutlet, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Sparkles } from 'lucide-react';
 
 import type { ThemeMode } from '../../types';
 import { soundEngine } from '../../audio/soundEngine';
@@ -10,6 +11,23 @@ import { SparkleTrail } from '../SparkleTrail';
 import { Footer } from '../Footer';
 import { EasterEggModal } from '../EasterEggModal';
 import { ConstellationPassportModal } from '../ConstellationPassportModal';
+
+const getRouteMeta = (path: string) => {
+  switch (path) {
+    case '/':
+      return { title: 'Midnight Nursery', code: 'SECTOR_01 // AWAKENING' };
+    case '/dream-forge':
+      return { title: 'The Dream Forge', code: 'SECTOR_02 // DREAM RECIPE' };
+    case '/atlas':
+      return { title: 'The Midnight Atlas', code: 'SECTOR_03 // NOCTURNAL RADAR' };
+    case '/archive':
+      return { title: 'The Bedtime Archive', code: 'SECTOR_04 // STORYBOOK TOME' };
+    case '/secret-arcade':
+      return { title: 'Secret Star Arcade', code: 'SECTOR_99 // CATCH-A-DREAM' };
+    default:
+      return { title: 'DreamOS Gateway', code: 'SECTOR_00 // TRANSIT' };
+  }
+};
 
 export const SharedLayout: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>('daydream');
@@ -20,48 +38,72 @@ export const SharedLayout: React.FC = () => {
   const [isArcadeUnlocked, setIsArcadeUnlocked] = useState(false);
 
   const location = useLocation();
-  const routeWipeRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenSecret = useCallback(() => {
+    setIsEasterEggOpen(true);
+    setIsArcadeUnlocked(true);
+  }, []);
+
+  const outlet = useOutlet({ onOpenSecret: handleOpenSecret });
+  const [frozenOutlet, setFrozenOutlet] = useState<React.ReactNode>(null);
+  const [isCurtainActive, setIsCurtainActive] = useState(false);
+  const [curtainTargetMeta, setCurtainTargetMeta] = useState(() => getRouteMeta(location.pathname));
+
+  const curtainRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isFirstRenderRef = useRef(true);
+  const prevOutletRef = useRef(outlet);
 
-  // Cinematic starlight aperture transition on route changes
+  // Keep track of current rendered outlet when not transitioning
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
-    document.documentElement.style.setProperty('--scroll-night-progress', '0');
+    if (!isCurtainActive) {
+      prevOutletRef.current = outlet;
+    }
+  }, [outlet, isCurtainActive]);
 
-    // Skip transition on initial app mount
+  // Dream Curtain page-to-page transition on route changes
+  useEffect(() => {
     if (isFirstRenderRef.current) {
       isFirstRenderRef.current = false;
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      document.documentElement.style.setProperty('--scroll-night-progress', '0');
       return;
     }
 
     const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.innerWidth <= 768;
+    const curtainEl = curtainRef.current;
+    const meta = getRouteMeta(location.pathname);
+    setCurtainTargetMeta(meta);
 
+    // If an animation is already running, clean up safely
     if (timelineRef.current) {
       timelineRef.current.kill();
       timelineRef.current = null;
     }
 
-    const wipeEl = routeWipeRef.current;
-    const mainEl = document.getElementById('main-content');
-
-    if (isReduced || !wipeEl) {
-      if (mainEl) {
-        gsap.fromTo(mainEl, { opacity: 0.85 }, { opacity: 1, duration: 0.2, ease: 'power1.out', clearProps: 'all' });
-      }
+    if (isReduced || !curtainEl) {
+      setIsCurtainActive(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      document.documentElement.style.setProperty('--scroll-night-progress', '0');
       requestAnimationFrame(() => {
         ScrollTrigger.refresh();
       });
       return;
     }
 
-    // Gentle starlight chime on page navigation
-    soundEngine.playMusicBoxNote(587.33, 0.7);
+    // Freeze previous page content during the curtain sweep-in
+    setFrozenOutlet(prevOutletRef.current);
+    setIsCurtainActive(true);
+
+    // Subtle, restrained 432 Hz transit click
+    soundEngine.playClick(560);
 
     const tl = gsap.timeline({
       onComplete: () => {
-        if (wipeEl) {
-          gsap.set(wipeEl, { opacity: 0 });
+        setIsCurtainActive(false);
+        if (curtainEl) {
+          gsap.set(curtainEl, { display: 'none', pointerEvents: 'none' });
         }
         requestAnimationFrame(() => {
           ScrollTrigger.refresh();
@@ -71,25 +113,31 @@ export const SharedLayout: React.FC = () => {
 
     timelineRef.current = tl;
 
-    tl.set(wipeEl, { opacity: 1, clipPath: 'circle(0% at 50% 50%)' })
-      .to(wipeEl, {
-        clipPath: 'circle(120% at 50% 50%)',
-        duration: 0.22,
-        ease: 'power2.in'
+    // Phase A: Curtain sweeps down (-100% to 0%), covering outgoing page
+    tl.set(curtainEl, {
+      display: 'flex',
+      pointerEvents: 'auto',
+      yPercent: -100,
+      opacity: 1
+    })
+      .to(curtainEl, {
+        yPercent: 0,
+        duration: isMobile ? 0.16 : 0.22,
+        ease: 'power3.inOut'
       })
-      .add(() => {
-        if (mainEl) {
-          gsap.fromTo(
-            mainEl,
-            { opacity: 0.8 },
-            { opacity: 1, duration: 0.2, ease: 'power2.out', clearProps: 'all' }
-          );
-        }
+      // Phase B: When curtain 100% covers viewport, swap to new route and reset scroll
+      .call(() => {
+        setIsCurtainActive(false); // Unfreezes to new outlet behind the curtain
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+        document.documentElement.style.setProperty('--scroll-night-progress', '0');
       })
-      .to(wipeEl, {
-        opacity: 0,
-        duration: 0.18,
-        ease: 'power2.out'
+      // Brief tactile hold for reading route badge (40-60ms)
+      .to({}, { duration: isMobile ? 0.04 : 0.06 })
+      // Phase C: Curtain smoothly sweeps down to reveal destination
+      .to(curtainEl, {
+        yPercent: 100,
+        duration: isMobile ? 0.18 : 0.24,
+        ease: 'power3.out'
       });
 
     return () => {
@@ -97,11 +145,9 @@ export const SharedLayout: React.FC = () => {
         timelineRef.current.kill();
         timelineRef.current = null;
       }
-      if (wipeEl) {
-        gsap.set(wipeEl, { opacity: 0 });
-      }
-      if (mainEl) {
-        gsap.set(mainEl, { clearProps: 'all' });
+      setIsCurtainActive(false);
+      if (curtainEl) {
+        gsap.set(curtainEl, { display: 'none', pointerEvents: 'none' });
       }
     };
   }, [location.pathname]);
@@ -133,11 +179,6 @@ export const SharedLayout: React.FC = () => {
     setChaosMode((prev) => !prev);
   };
 
-  const handleOpenSecret = () => {
-    setIsEasterEggOpen(true);
-    setIsArcadeUnlocked(true);
-  };
-
   return (
     <div id="top" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Sparkle cursor trail on mouse devices */}
@@ -156,9 +197,9 @@ export const SharedLayout: React.FC = () => {
         isArcadeUnlocked={isArcadeUnlocked}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area — Strictly transform: none to preserve ScrollTrigger pinning */}
       <main id="main-content" style={{ flex: 1 }}>
-        <Outlet context={{ onOpenSecret: handleOpenSecret }} />
+        {isCurtainActive ? frozenOutlet : outlet}
       </main>
 
       {/* Shared Footer across all routes */}
@@ -175,40 +216,35 @@ export const SharedLayout: React.FC = () => {
         />
       )}
 
-      {/* Cinematic Golden Starlight Celestial Route Aperture Wipe */}
+      {/* The Dream Curtain Cinematic Page Transition Overlay */}
       <div
-        ref={routeWipeRef}
-        className="celestial-route-wipe"
+        ref={curtainRef}
+        className="dream-curtain-overlay"
         aria-hidden="true"
         onClick={() => {
           if (timelineRef.current) {
             timelineRef.current.progress(1);
           }
         }}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          pointerEvents: 'none',
-          opacity: 0,
-          background: 'radial-gradient(circle at center, rgba(255, 230, 160, 0.95) 0%, rgba(42, 28, 62, 0.98) 65%, #161026 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
       >
-        <div
-          style={{
-            fontFamily: 'serif',
-            fontSize: '1.6rem',
-            color: '#ffd88a',
-            textShadow: '0 0 15px rgba(255, 216, 138, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem'
-          }}
-        >
-          ✦
+        <div className="dream-curtain-lead-trim top-trim" />
+        <div className="dream-curtain-lead-trim bottom-trim" />
+        <div className="dream-curtain-ambient" />
+        <div className="dream-curtain-astrolabe" />
+
+        <div className="dream-curtain-center">
+          <div className="font-mono dream-curtain-kicker">
+            <Sparkles size={13} color="var(--color-gold)" />
+            <span>PIP://DREAMOS '99 // TRANSIT BUS</span>
+          </div>
+          <h2 className="font-serif dream-curtain-title">
+            {curtainTargetMeta.title}
+          </h2>
+          <div className="font-mono dream-curtain-sector">
+            <span>{curtainTargetMeta.code}</span>
+            <span className="curtain-dot">✦</span>
+            <span>432 Hz CALIBRATED</span>
+          </div>
         </div>
       </div>
     </div>
